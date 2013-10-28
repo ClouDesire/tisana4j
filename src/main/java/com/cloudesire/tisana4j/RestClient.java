@@ -66,7 +66,7 @@ public class RestClient
 	}
 
 	/**
-	 *
+	 * 
 	 * @param skipValidation
 	 *            if true skips server certificate validation for Https
 	 *            connections
@@ -77,7 +77,7 @@ public class RestClient
 	}
 
 	/**
-	 *
+	 * 
 	 * @param username
 	 *            user for authentication
 	 * @param password
@@ -92,7 +92,7 @@ public class RestClient
 	}
 
 	/**
-	 *
+	 * 
 	 * @param username
 	 *            user for authentication
 	 * @param password
@@ -178,6 +178,7 @@ public class RestClient
 
 	public <T> List<T> getCollection ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws Exception
 	{
+		log.debug("Sending GET to " + url);
 		HttpGet get = new HttpGet(url.toURI());
 		setupMethod(get, newHeaders);
 		HttpResponse response = getHttpClient().execute(get);
@@ -370,8 +371,7 @@ public class RestClient
 			StringEntity entity = new StringEntity(payload);
 			log.debug("Payload:\n " + payload);
 			request.setEntity(entity);
-		}
-		catch (JsonMappingException e)
+		} catch (JsonMappingException e)
 		{
 			throw new MappingException("Error while mapping Object to Json");
 		}
