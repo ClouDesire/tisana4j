@@ -3,8 +3,8 @@
   <groupId>com.cloudesire</groupId>
   <artifactId>tisana4j</artifactId>
   <version>0.0.1-SNAPSHOT</version>
-  <name>Rest Client Library</name>
-  <description>A library to simplify REST API consumption</description>
+  <name>tisana4j</name>
+  <description>Yet another (but missing) simple RESTful client library for Java.</description>
   <dependencies>
   	<dependency>
   		<groupId>com.fasterxml.jackson.core</groupId>
