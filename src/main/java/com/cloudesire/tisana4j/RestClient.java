@@ -269,13 +269,18 @@ public class RestClient
 	@SuppressWarnings ( "unchecked" )
 	public <T> T post ( URL url, T obj, Map<String, String> newHeaders ) throws Exception
 	{
+		return (T) post(url, obj, newHeaders, obj.getClass());
+	}
+
+	public <T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass ) throws Exception
+	{
 		log.debug("Sending POST to " + url);
 		HttpPost post = new HttpPost(url.toURI());
 		setupMethod(post, newHeaders);
 		writeObject(obj, post);
 		HttpResponse response = getHttpClient().execute(post);
 		checkError(response);
-		return (T) readObject(obj.getClass(), response);
+		return readObject(responseClass, response);
 	}
 
 	public <T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass ) throws Exception
