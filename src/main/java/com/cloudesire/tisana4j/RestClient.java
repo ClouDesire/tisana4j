@@ -260,8 +260,10 @@ public class RestClient
 		setupMethod(head, newHeaders);
 		HttpResponse response = getHttpClient().execute(head);
 		checkError(response);
-		Header[] allHeaders = response.getAllHeaders();
 		Map<String, String> headers = new HashMap<>();
+		Header[] allHeaders = response.getAllHeaders();
+		if (allHeaders == null)
+			return headers;
 		for (int i = 0; i < allHeaders.length; i++)
 			headers.put(allHeaders[i].getName(), allHeaders[i].getValue());
 		return headers;
