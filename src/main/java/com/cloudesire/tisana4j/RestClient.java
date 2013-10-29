@@ -35,6 +35,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +71,7 @@ public class RestClient
 	}
 
 	/**
-	 *
+	 * 
 	 * @param skipValidation
 	 *            if true skips server certificate validation for Https
 	 *            connections
@@ -80,7 +82,7 @@ public class RestClient
 	}
 
 	/**
-	 *
+	 * 
 	 * @param username
 	 *            user for authentication
 	 * @param password
@@ -95,7 +97,7 @@ public class RestClient
 	}
 
 	/**
-	 *
+	 * 
 	 * @param username
 	 *            user for authentication
 	 * @param password
@@ -180,6 +182,7 @@ public class RestClient
 
 	public <T> List<T> getCollection ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws Exception
 	{
+		log.debug("Sending GET to " + url);
 		HttpGet get = new HttpGet(url.toURI());
 		setupMethod(get, newHeaders);
 		HttpResponse response = getHttpClient().execute(get);
@@ -198,17 +201,21 @@ public class RestClient
 
 	private synchronized HttpClient getHttpClient () throws Exception
 	{
-		if (httpClient == null) if (skipValidation)
+		if (httpClient == null)
 		{
-			log.debug("Configuring HTTPS with no validation");
-			httpClient = new DefaultHttpClient();
+			PoolingClientConnectionManager cm = new PoolingClientConnectionManager();
+			httpClient = new DefaultHttpClient(cm);
+			if (skipValidation)
+			{
+				log.debug("Configuring HTTPS with no validation");
+				SSLSocketFactory sf = new SSLSocketFactory(getSSLContext(), new AllowAllHostnameVerifier());
+				Scheme https = new Scheme("https", 443, sf);
+				httpClient.getConnectionManager().getSchemeRegistry().register(https);
 
-			SSLSocketFactory sf = new SSLSocketFactory(getSSLContext(), new AllowAllHostnameVerifier());
-			Scheme https = new Scheme("https", 443, sf);
-			httpClient.getConnectionManager().getSchemeRegistry().register(https);
+			}
 
 		}
-		else httpClient = new DefaultHttpClient();
+
 		return httpClient;
 	}
 
@@ -308,13 +315,23 @@ public class RestClient
 	@SuppressWarnings ( "unchecked" )
 	public <T> T post ( URL url, T obj, Map<String, String> newHeaders ) throws Exception
 	{
+		return (T) post(url, obj, newHeaders, obj.getClass());
+	}
+
+	public <T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass ) throws Exception
+	{
 		log.debug("Sending POST to " + url);
 		HttpPost post = new HttpPost(url.toURI());
 		setupMethod(post, newHeaders);
-		writeObject(obj, post);
+		if (obj != null) writeObject(obj, post);
 		HttpResponse response = getHttpClient().execute(post);
 		checkError(response);
-		return (T) readObject(obj.getClass(), response);
+		if (responseClass == null)
+		{
+			EntityUtils.consumeQuietly(response.getEntity());
+			return null;
+		}
+		return readObject(responseClass, response);
 	}
 
 	public <T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass ) throws Exception
@@ -410,8 +427,7 @@ public class RestClient
 			StringEntity entity = new StringEntity(payload);
 			log.debug("Payload:\n " + payload);
 			request.setEntity(entity);
-		}
-		catch (JsonMappingException e)
+		} catch (JsonMappingException e)
 		{
 			throw new MappingException("Error while mapping Object to Json");
 		}
