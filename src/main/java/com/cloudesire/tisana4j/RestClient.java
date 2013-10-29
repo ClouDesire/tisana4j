@@ -16,12 +16,15 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
+import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
@@ -130,11 +133,11 @@ public class RestClient
 		int responseCode = response.getStatusLine().getStatusCode();
 		if (responseCode < 200 || responseCode >= 300)
 
-		if (exceptionTranslator != null)
+			if (exceptionTranslator != null)
 
-		throw exceptionTranslator.translateError(responseCode, response.getStatusLine().getReasonPhrase(), response
-				.getEntity().getContent());
-		else throw new RestException(responseCode, response.getStatusLine().getReasonPhrase());
+				throw exceptionTranslator.translateError(responseCode, response.getStatusLine().getReasonPhrase(), response
+						.getEntity().getContent());
+			else throw new RestException(responseCode, response.getStatusLine().getReasonPhrase());
 
 	}
 
@@ -155,8 +158,7 @@ public class RestClient
 		return;
 	}
 
-	public <T> T get ( URL url, Class<T> clazz ) throws Exception
-	{
+	public <T> T get(URL url, Class<T> clazz) throws Exception {
 		return get(url, clazz, null);
 	}
 
@@ -240,6 +242,44 @@ public class RestClient
 		return ctx;
 	}
 
+	public Map<String, String> head(URL url) throws Exception {
+		return head(url, null);
+	}
+
+	public Map<String, String> head(URL url, Map<String, String> newHeaders)
+			throws Exception {
+		log.debug("Sending HEAD to " + url);
+		HttpHead head= new HttpHead(url.toURI());
+		setupMethod(head, newHeaders);
+		HttpResponse response = getHttpClient().execute(head);
+		checkError(response);
+		Header[] allHeaders = response.getAllHeaders();
+		Map<String, String> headers = new HashMap<>();
+		for (int i = 0; i < allHeaders.length; i++)
+			headers.put(allHeaders[i].getName(), allHeaders[i].getValue());
+		return headers;
+	}
+
+	public String[] options(URL url) throws Exception {
+		return options(url, null);
+	}
+	public String[] options(URL url,Map<String, String> newHeaders)
+			throws Exception {
+		log.debug("Sending OPTIONS to " + url);
+		HttpOptions options= new HttpOptions(url.toURI());
+		setupMethod(options, newHeaders);
+		HttpResponse response = getHttpClient().execute(options);
+		checkError(response);
+		String allow = null;
+		Header[] allHeaders = response.getAllHeaders();
+		for (int i = 0; i < allHeaders.length; i++)
+			if(allHeaders[i].getName()=="Allow")
+				allow=allHeaders[i].getValue();
+		if (allow == null)
+			throw new Exception("Method options not supported.");
+		return allow.split(",");
+	}
+
 	public void patch ( URL url, Map<String, String> paramMap ) throws Exception
 	{
 		patch(url, paramMap, null);
@@ -284,7 +324,7 @@ public class RestClient
 
 	public <T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass,
 			Map<String, String> newHeaders ) throws Exception
-	{
+			{
 		log.debug("Sending binary data with POST to " + url);
 
 		HttpPost post = new HttpPost(url.toURI());
@@ -300,7 +340,7 @@ public class RestClient
 		checkError(response);
 		if (responseClass == null) return null;
 		return readObject(responseClass, response);
-	}
+			}
 
 	public <T> T put ( URL url, T obj ) throws Exception
 	{
@@ -320,7 +360,7 @@ public class RestClient
 	}
 
 	private <T> T readObject ( Class<T> clazz, HttpResponse response ) throws IOException, JsonProcessingException,
-			ParseException
+	ParseException
 	{
 		try
 		{
@@ -359,7 +399,7 @@ public class RestClient
 	}
 
 	private <T> void writeObject ( T obj, HttpEntityEnclosingRequest request ) throws IOException,
-			JsonGenerationException, MappingException, JsonProcessingException, ParseException
+	JsonGenerationException, MappingException, JsonProcessingException, ParseException
 	{
 		ObjectWriter writer = mapper.writer();
 		request.addHeader("Content-type", "application/json");
