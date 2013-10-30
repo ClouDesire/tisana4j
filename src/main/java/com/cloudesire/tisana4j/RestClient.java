@@ -69,7 +69,7 @@ public class RestClient
 
 	/**
 	 * Default settings: no authentication and verify if server certificate is
-	 * valid
+	 * valid. Uses json. For use xml setUseXml() to true.
 	 */
 	public RestClient()
 	{
@@ -405,13 +405,19 @@ public class RestClient
 				T obj = (T) jaxbUnmarshaller.unmarshal(response.getEntity()
 						.getContent());
 				return obj;
-			} catch (JAXBException e)
+		} catch (JAXBException e)
 		{
 			throw new ParseException("Bad object Class");
 		}
 
 	}
 
+	/**
+	 * Set an exception translator for server errors
+	 * 
+	 * @param exceptionTranslator
+	 * 
+	 */
 	public void setExceptionTranslator ( ExceptionTranslator exceptionTranslator )
 	{
 		this.exceptionTranslator = exceptionTranslator;
@@ -435,6 +441,10 @@ public class RestClient
 
 	}
 
+	/**
+	 * @param useXml
+	 *            if true client uses xml instead of json.
+	 */
 	public void setUseXml(boolean useXml){
 		this.useXml=useXml;
 	}

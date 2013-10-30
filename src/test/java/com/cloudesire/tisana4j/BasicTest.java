@@ -1,10 +1,8 @@
-tisana4j
-========
+package com.cloudesire.tisana4j;
 
-Yet another (but missing) simple RESTful client library for Java. (BETA)
+import java.net.URL;
 
-```java
-public class Test {
+public class BasicTest {
 	private static class NetworkAddress {
 		private String ip;
 
@@ -30,4 +28,3 @@ public class Test {
 	}
 
 }
-```
