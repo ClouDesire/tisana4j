@@ -141,11 +141,14 @@ public class RestClient
 		int responseCode = response.getStatusLine().getStatusCode();
 		if (responseCode < 200 || responseCode >= 300)
 
-			if (exceptionTranslator != null)
-
-				throw exceptionTranslator.translateError(responseCode, response.getStatusLine().getReasonPhrase(), response
-						.getEntity().getContent());
-			else throw new RestException(responseCode, response.getStatusLine().getReasonPhrase());
+		if (exceptionTranslator != null)
+		{
+			Exception translatedException = exceptionTranslator.translateError(responseCode, response.getStatusLine()
+					.getReasonPhrase(), response.getEntity().getContent());
+			if (translatedException == null) return;
+			else throw translatedException;
+		}
+		else throw new RestException(responseCode, response.getStatusLine().getReasonPhrase());
 
 	}
 
@@ -166,7 +169,8 @@ public class RestClient
 		return;
 	}
 
-	public <T> T get(URL url, Class<T> clazz) throws Exception {
+	public <T> T get ( URL url, Class<T> clazz ) throws Exception
+	{
 		return get(url, clazz, null);
 	}
 
@@ -255,43 +259,43 @@ public class RestClient
 		return ctx;
 	}
 
-	public Map<String, String> head(URL url) throws Exception {
+	public Map<String, String> head ( URL url ) throws Exception
+	{
 		return head(url, null);
 	}
 
-	public Map<String, String> head(URL url, Map<String, String> newHeaders)
-			throws Exception {
+	public Map<String, String> head ( URL url, Map<String, String> newHeaders ) throws Exception
+	{
 		log.debug("Sending HEAD to " + url);
-		HttpHead head= new HttpHead(url.toURI());
+		HttpHead head = new HttpHead(url.toURI());
 		setupMethod(head, newHeaders);
 		HttpResponse response = getHttpClient().execute(head);
 		checkError(response);
 		Map<String, String> headers = new HashMap<>();
 		Header[] allHeaders = response.getAllHeaders();
-		if (allHeaders == null)
-			return headers;
+		if (allHeaders == null) return headers;
 		for (int i = 0; i < allHeaders.length; i++)
 			headers.put(allHeaders[i].getName(), allHeaders[i].getValue());
 		return headers;
 	}
 
-	public String[] options(URL url) throws Exception {
+	public String[] options ( URL url ) throws Exception
+	{
 		return options(url, null);
 	}
-	public String[] options(URL url,Map<String, String> newHeaders)
-			throws Exception {
+
+	public String[] options ( URL url, Map<String, String> newHeaders ) throws Exception
+	{
 		log.debug("Sending OPTIONS to " + url);
-		HttpOptions options= new HttpOptions(url.toURI());
+		HttpOptions options = new HttpOptions(url.toURI());
 		setupMethod(options, newHeaders);
 		HttpResponse response = getHttpClient().execute(options);
 		checkError(response);
 		String allow = null;
 		Header[] allHeaders = response.getAllHeaders();
 		for (int i = 0; i < allHeaders.length; i++)
-			if(allHeaders[i].getName()=="Allow")
-				allow=allHeaders[i].getValue();
-		if (allow == null)
-			throw new Exception("Method options not supported.");
+			if (allHeaders[i].getName() == "Allow") allow = allHeaders[i].getValue();
+		if (allow == null) throw new Exception("Method options not supported.");
 		return allow.split(",");
 	}
 
@@ -349,7 +353,7 @@ public class RestClient
 
 	public <T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass,
 			Map<String, String> newHeaders ) throws Exception
-			{
+	{
 		log.debug("Sending binary data with POST to " + url);
 
 		HttpPost post = new HttpPost(url.toURI());
@@ -365,7 +369,7 @@ public class RestClient
 		checkError(response);
 		if (responseClass == null) return null;
 		return readObject(responseClass, response);
-			}
+	}
 
 	public <T> T put ( URL url, T obj ) throws Exception
 	{
@@ -385,26 +389,23 @@ public class RestClient
 	}
 
 	private <T> T readObject ( Class<T> clazz, HttpResponse response ) throws IOException, JsonProcessingException,
-	ParseException
+			ParseException
 	{
-		if (!useXml)
-			try {
-				T obj = mapper.reader(clazz).readValue(
-						response.getEntity().getContent());
-				return obj;
-			} catch (JsonParseException e) {
-				throw new ParseException("Bad object Class");
-			}
-		else
-			try
+		if (!useXml) try
 		{
-				JAXBContext jaxbContext = JAXBContext.newInstance(clazz);
-				Unmarshaller jaxbUnmarshaller = jaxbContext
-						.createUnmarshaller();
-				@SuppressWarnings("unchecked")
-				T obj = (T) jaxbUnmarshaller.unmarshal(response.getEntity()
-						.getContent());
-				return obj;
+			T obj = mapper.reader(clazz).readValue(response.getEntity().getContent());
+			return obj;
+		} catch (JsonParseException e)
+		{
+			throw new ParseException("Bad object Class");
+		}
+		else try
+		{
+			JAXBContext jaxbContext = JAXBContext.newInstance(clazz);
+			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+			@SuppressWarnings ( "unchecked" )
+			T obj = (T) jaxbUnmarshaller.unmarshal(response.getEntity().getContent());
+			return obj;
 		} catch (JAXBException e)
 		{
 			throw new ParseException("Bad object Class");
@@ -450,34 +451,35 @@ public class RestClient
 	}
 
 	private <T> void writeObject ( T obj, HttpEntityEnclosingRequest request ) throws IOException,
-	JsonGenerationException, MappingException, JsonProcessingException, ParseException
+			JsonGenerationException, MappingException, JsonProcessingException, ParseException
 	{
-		if (!useXml)
-			try {
-				request.addHeader("Content-type", "application/json");
-				ObjectWriter writer = mapper.writer();
-				String payload = writer.writeValueAsString(obj);
-				StringEntity entity = new StringEntity(payload);
-				log.debug("Payload:\n " + payload);
-				request.setEntity(entity);
-			} catch (JsonMappingException e) {
-				throw new MappingException("Error while mapping Object to Json");
-			}
-		else
-			try {
-				request.addHeader("Content-type", "application/xml");
-				JAXBContext jaxbContext = JAXBContext.newInstance(obj
-						.getClass());
-				Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				jaxbMarshaller.marshal(obj, baos);
-				String payload = baos.toString();
-				StringEntity entity = new StringEntity(payload);
-				log.debug("Payload:\n " + payload);
-				request.setEntity(entity);
-			} catch (JAXBException e) {
-				throw new MappingException("Error while mapping Object to xml");
-			}
+		if (!useXml) try
+		{
+			request.addHeader("Content-type", "application/json");
+			ObjectWriter writer = mapper.writer();
+			String payload = writer.writeValueAsString(obj);
+			StringEntity entity = new StringEntity(payload);
+			log.debug("Payload:\n " + payload);
+			request.setEntity(entity);
+		} catch (JsonMappingException e)
+		{
+			throw new MappingException("Error while mapping Object to Json");
+		}
+		else try
+		{
+			request.addHeader("Content-type", "application/xml");
+			JAXBContext jaxbContext = JAXBContext.newInstance(obj.getClass());
+			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			jaxbMarshaller.marshal(obj, baos);
+			String payload = baos.toString();
+			StringEntity entity = new StringEntity(payload);
+			log.debug("Payload:\n " + payload);
+			request.setEntity(entity);
+		} catch (JAXBException e)
+		{
+			throw new MappingException("Error while mapping Object to xml");
+		}
 
 	}
 
