@@ -133,9 +133,12 @@ public class RestClient
 		if (responseCode < 200 || responseCode >= 300)
 
 		if (exceptionTranslator != null)
-
-		throw exceptionTranslator.translateError(responseCode, response.getStatusLine().getReasonPhrase(), response
-				.getEntity().getContent());
+		{
+			Exception translatedException = exceptionTranslator.translateError(responseCode, response.getStatusLine()
+					.getReasonPhrase(), response.getEntity().getContent());
+			if (translatedException == null) return;
+			else throw translatedException;
+		}
 		else throw new RestException(responseCode, response.getStatusLine().getReasonPhrase());
 
 	}
