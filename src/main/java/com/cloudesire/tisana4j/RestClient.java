@@ -1,5 +1,6 @@
 package com.cloudesire.tisana4j;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -15,6 +16,10 @@ import java.util.Map;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
@@ -54,6 +59,7 @@ public class RestClient
 	private final String password;
 	private SSLContext ctx;
 	private final boolean authenticated;
+	private boolean useXml = false;
 	private ExceptionTranslator exceptionTranslator;
 	private final ObjectMapper mapper = new ObjectMapper();
 	private final boolean skipValidation;
@@ -381,17 +387,29 @@ public class RestClient
 	private <T> T readObject ( Class<T> clazz, HttpResponse response ) throws IOException, JsonProcessingException,
 	ParseException
 	{
-		try
+		if (!useXml)
+			try {
+				T obj = mapper.reader(clazz).readValue(
+						response.getEntity().getContent());
+				return obj;
+			} catch (JsonParseException e) {
+				throw new ParseException("Bad object Class");
+			}
+		else
+			try
 		{
-
-			T obj = mapper.reader(clazz).readValue(response.getEntity().getContent());
-
-			return obj;
-		} catch (JsonParseException e)
+				JAXBContext jaxbContext = JAXBContext.newInstance(clazz);
+				Unmarshaller jaxbUnmarshaller = jaxbContext
+						.createUnmarshaller();
+				@SuppressWarnings("unchecked")
+				T obj = (T) jaxbUnmarshaller.unmarshal(response.getEntity()
+						.getContent());
+				return obj;
+			} catch (JAXBException e)
 		{
-
 			throw new ParseException("Bad object Class");
 		}
+
 	}
 
 	public void setExceptionTranslator ( ExceptionTranslator exceptionTranslator )
@@ -417,22 +435,39 @@ public class RestClient
 
 	}
 
+	public void setUseXml(boolean useXml){
+		this.useXml=useXml;
+	}
+
 	private <T> void writeObject ( T obj, HttpEntityEnclosingRequest request ) throws IOException,
 	JsonGenerationException, MappingException, JsonProcessingException, ParseException
 	{
-		ObjectWriter writer = mapper.writer();
-		request.addHeader("Content-type", "application/json");
-
-		try
-		{
-			String payload = writer.writeValueAsString(obj);
-			StringEntity entity = new StringEntity(payload);
-			log.debug("Payload:\n " + payload);
-			request.setEntity(entity);
-		} catch (JsonMappingException e)
-		{
-			throw new MappingException("Error while mapping Object to Json");
-		}
+		if (!useXml)
+			try {
+				request.addHeader("Content-type", "application/json");
+				ObjectWriter writer = mapper.writer();
+				String payload = writer.writeValueAsString(obj);
+				StringEntity entity = new StringEntity(payload);
+				log.debug("Payload:\n " + payload);
+				request.setEntity(entity);
+			} catch (JsonMappingException e) {
+				throw new MappingException("Error while mapping Object to Json");
+			}
+		else
+			try {
+				request.addHeader("Content-type", "application/xml");
+				JAXBContext jaxbContext = JAXBContext.newInstance(obj
+						.getClass());
+				Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				jaxbMarshaller.marshal(obj, baos);
+				String payload = baos.toString();
+				StringEntity entity = new StringEntity(payload);
+				log.debug("Payload:\n " + payload);
+				request.setEntity(entity);
+			} catch (JAXBException e) {
+				throw new MappingException("Error while mapping Object to xml");
+			}
 
 	}
 
