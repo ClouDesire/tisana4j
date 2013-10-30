@@ -1,5 +1,6 @@
 package com.cloudesire.tisana4j;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -15,13 +16,20 @@ import java.util.Map;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 
+import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
@@ -51,6 +59,7 @@ public class RestClient
 	private final String password;
 	private SSLContext ctx;
 	private final boolean authenticated;
+	private boolean useXml = false;
 	private ExceptionTranslator exceptionTranslator;
 	private final ObjectMapper mapper = new ObjectMapper();
 	private final boolean skipValidation;
@@ -250,6 +259,46 @@ public class RestClient
 		return ctx;
 	}
 
+	public Map<String, String> head ( URL url ) throws Exception
+	{
+		return head(url, null);
+	}
+
+	public Map<String, String> head ( URL url, Map<String, String> newHeaders ) throws Exception
+	{
+		log.debug("Sending HEAD to " + url);
+		HttpHead head = new HttpHead(url.toURI());
+		setupMethod(head, newHeaders);
+		HttpResponse response = getHttpClient().execute(head);
+		checkError(response);
+		Map<String, String> headers = new HashMap<>();
+		Header[] allHeaders = response.getAllHeaders();
+		if (allHeaders == null) return headers;
+		for (int i = 0; i < allHeaders.length; i++)
+			headers.put(allHeaders[i].getName(), allHeaders[i].getValue());
+		return headers;
+	}
+
+	public String[] options ( URL url ) throws Exception
+	{
+		return options(url, null);
+	}
+
+	public String[] options ( URL url, Map<String, String> newHeaders ) throws Exception
+	{
+		log.debug("Sending OPTIONS to " + url);
+		HttpOptions options = new HttpOptions(url.toURI());
+		setupMethod(options, newHeaders);
+		HttpResponse response = getHttpClient().execute(options);
+		checkError(response);
+		String allow = null;
+		Header[] allHeaders = response.getAllHeaders();
+		for (int i = 0; i < allHeaders.length; i++)
+			if (allHeaders[i].getName() == "Allow") allow = allHeaders[i].getValue();
+		if (allow == null) throw new Exception("Method options not supported.");
+		return allow.split(",");
+	}
+
 	public void patch ( URL url, Map<String, String> paramMap ) throws Exception
 	{
 		patch(url, paramMap, null);
@@ -342,17 +391,26 @@ public class RestClient
 	private <T> T readObject ( Class<T> clazz, HttpResponse response ) throws IOException, JsonProcessingException,
 			ParseException
 	{
-		try
+		if (!useXml) try
 		{
-
 			T obj = mapper.reader(clazz).readValue(response.getEntity().getContent());
-
 			return obj;
 		} catch (JsonParseException e)
 		{
-
 			throw new ParseException("Bad object Class");
 		}
+		else try
+		{
+			JAXBContext jaxbContext = JAXBContext.newInstance(clazz);
+			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+			@SuppressWarnings ( "unchecked" )
+			T obj = (T) jaxbUnmarshaller.unmarshal(response.getEntity().getContent());
+			return obj;
+		} catch (JAXBException e)
+		{
+			throw new ParseException("Bad object Class");
+		}
+
 	}
 
 	public void setExceptionTranslator ( ExceptionTranslator exceptionTranslator )
@@ -378,14 +436,18 @@ public class RestClient
 
 	}
 
+	public void setUseXml ( boolean useXml )
+	{
+		this.useXml = useXml;
+	}
+
 	private <T> void writeObject ( T obj, HttpEntityEnclosingRequest request ) throws IOException,
 			JsonGenerationException, MappingException, JsonProcessingException, ParseException
 	{
-		ObjectWriter writer = mapper.writer();
-		request.addHeader("Content-type", "application/json");
-
-		try
+		if (!useXml) try
 		{
+			request.addHeader("Content-type", "application/json");
+			ObjectWriter writer = mapper.writer();
 			String payload = writer.writeValueAsString(obj);
 			StringEntity entity = new StringEntity(payload);
 			log.debug("Payload:\n " + payload);
@@ -393,6 +455,21 @@ public class RestClient
 		} catch (JsonMappingException e)
 		{
 			throw new MappingException("Error while mapping Object to Json");
+		}
+		else try
+		{
+			request.addHeader("Content-type", "application/xml");
+			JAXBContext jaxbContext = JAXBContext.newInstance(obj.getClass());
+			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			jaxbMarshaller.marshal(obj, baos);
+			String payload = baos.toString();
+			StringEntity entity = new StringEntity(payload);
+			log.debug("Payload:\n " + payload);
+			request.setEntity(entity);
+		} catch (JAXBException e)
+		{
+			throw new MappingException("Error while mapping Object to xml");
 		}
 
 	}
