@@ -20,9 +20,11 @@ public class BasicTest {
 		// default Client: no credentials and server certificate authentication
 		// required
 		RestClient client = new RestClient();
+
 		NetworkAddress testClass = client.get(
 				new URL("http://ip.jsontest.com/"),
 				NetworkAddress.class);
+
 		System.out.println("YOUR IP:" + testClass.getIp());
 
 	}
