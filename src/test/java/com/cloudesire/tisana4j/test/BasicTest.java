@@ -1,6 +1,8 @@
-package com.cloudesire.tisana4j;
+package com.cloudesire.tisana4j.test;
 
 import java.net.URL;
+
+import com.cloudesire.tisana4j.RestClient;
 
 public class BasicTest {
 	private static class NetworkAddress {
@@ -8,10 +10,6 @@ public class BasicTest {
 
 		public String getIp() {
 			return ip;
-		}
-
-		public void setIp(String ip) {
-			this.ip = ip;
 		}
 
 	}
