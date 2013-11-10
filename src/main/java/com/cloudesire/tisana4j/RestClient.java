@@ -139,16 +139,17 @@ public class RestClient
 	private void checkError ( HttpResponse response ) throws Exception
 	{
 		int responseCode = response.getStatusLine().getStatusCode();
-		if (responseCode < 200 || responseCode >= 300)
-
-		if (exceptionTranslator != null)
-		{
-			Exception translatedException = exceptionTranslator.translateError(responseCode, response.getStatusLine()
-					.getReasonPhrase(), response.getEntity().getContent());
-			if (translatedException == null) return;
-			else throw translatedException;
+		if (responseCode < 200 || responseCode >= 300) {
+		    
+			if (exceptionTranslator != null)
+			{
+				Exception translatedException = exceptionTranslator.translateError(responseCode, response.getStatusLine()
+						.getReasonPhrase(), response.getEntity().getContent());
+				if (translatedException == null) return;
+				else throw translatedException;
+			}
+			else throw new RestException(responseCode, response.getStatusLine().getReasonPhrase());
 		}
-		else throw new RestException(responseCode, response.getStatusLine().getReasonPhrase());
 
 	}
 
