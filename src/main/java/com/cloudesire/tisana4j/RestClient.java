@@ -180,6 +180,11 @@ public class RestClient
 		log.debug("Sending GET to " + url);
 		HttpGet get = new HttpGet(url.toURI());
 		setupMethod(get, newHeaders);
+		Header[] headers = get.getAllHeaders();
+		for(Header header : headers)
+		{
+			log.debug(header.getName() + " " + header.getValue());
+		}
 		HttpResponse response = getHttpClient().execute(get);
 		checkError(response);
 		return readObject(clazz, response);
@@ -196,6 +201,11 @@ public class RestClient
 		log.debug("Sending GET to " + url);
 		HttpGet get = new HttpGet(url.toURI());
 		setupMethod(get, newHeaders);
+		Header[] headers = get.getAllHeaders();
+		for(Header header : headers)
+		{
+			log.debug(header.getName() + " " + header.getValue());
+		}
 		HttpResponse response = getHttpClient().execute(get);
 		checkError(response);
 		try
