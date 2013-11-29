@@ -448,7 +448,7 @@ public class RestClient
 		if (authenticated)
 		{
 			String authorization = "Basic";
-			String encoded = Base64Variants.MIME.encode((username + ":" + password).getBytes());
+			String encoded = Base64Variants.MIME_NO_LINEFEEDS.encode((username + ":" + password).getBytes());
 			authorization = "Basic " + encoded;
 			request.addHeader("Authorization", authorization);
 		}
