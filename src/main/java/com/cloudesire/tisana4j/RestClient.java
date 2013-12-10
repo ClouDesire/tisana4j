@@ -53,7 +53,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
-public class RestClient
+public class RestClient implements RestClientInterface
 {
 	private final String username;
 	private final String password;
@@ -153,12 +153,20 @@ public class RestClient
 
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#delete(java.net.URL)
+	 */
+	@Override
 	public void delete ( URL url ) throws Exception
 	{
 		delete(url, null);
 		return;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#delete(java.net.URL, java.util.Map)
+	 */
+	@Override
 	public void delete ( URL url, Map<String, String> newHeaders ) throws Exception
 	{
 		log.debug("Sending DELETE to " + url);
@@ -170,11 +178,19 @@ public class RestClient
 		return;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#get(java.net.URL, java.lang.Class)
+	 */
+	@Override
 	public <T> T get ( URL url, Class<T> clazz ) throws Exception
 	{
 		return get(url, clazz, null);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#get(java.net.URL, java.lang.Class, java.util.Map)
+	 */
+	@Override
 	public <T> T get ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws Exception
 	{
 		log.debug("Sending GET to " + url);
@@ -191,12 +207,20 @@ public class RestClient
 		return readObject(clazz, response);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#getCollection(java.net.URL, java.lang.Class)
+	 */
+	@Override
 	public <T> List<T> getCollection ( URL url, Class<T> clazz ) throws Exception
 	{
 		return getCollection(url, clazz, null);
 
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#getCollection(java.net.URL, java.lang.Class, java.util.Map)
+	 */
+	@Override
 	public <T> List<T> getCollection ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws Exception
 	{
 		log.debug("Sending GET to " + url);
@@ -272,11 +296,19 @@ public class RestClient
 		return ctx;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#head(java.net.URL)
+	 */
+	@Override
 	public Map<String, String> head ( URL url ) throws Exception
 	{
 		return head(url, null);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#head(java.net.URL, java.util.Map)
+	 */
+	@Override
 	public Map<String, String> head ( URL url, Map<String, String> newHeaders ) throws Exception
 	{
 		log.debug("Sending HEAD to " + url);
@@ -292,11 +324,19 @@ public class RestClient
 		return headers;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#options(java.net.URL)
+	 */
+	@Override
 	public String[] options ( URL url ) throws Exception
 	{
 		return options(url, null);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#options(java.net.URL, java.util.Map)
+	 */
+	@Override
 	public String[] options ( URL url, Map<String, String> newHeaders ) throws Exception
 	{
 		log.debug("Sending OPTIONS to " + url);
@@ -312,6 +352,10 @@ public class RestClient
 		return allow.split(",");
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#patch(java.net.URL, java.util.Map)
+	 */
+	@Override
 	public void patch ( URL url, Map<String, String> paramMap ) throws Exception
 	{
 		patch(url, paramMap, null);
@@ -319,6 +363,10 @@ public class RestClient
 
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#patch(java.net.URL, java.util.Map, java.util.Map)
+	 */
+	@Override
 	public void patch ( URL url, Map<String, String> paramMap, Map<String, String> newHeaders ) throws Exception
 	{
 		log.debug("Sending PATCH to " + url);
@@ -331,18 +379,30 @@ public class RestClient
 
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#post(java.net.URL, T)
+	 */
+	@Override
 	public <T> T post ( URL url, T obj ) throws Exception
 	{
 
 		return post(url, obj, null);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#post(java.net.URL, T, java.util.Map)
+	 */
+	@Override
 	@SuppressWarnings ( "unchecked" )
 	public <T> T post ( URL url, T obj, Map<String, String> newHeaders ) throws Exception
 	{
 		return (T) post(url, obj, newHeaders, obj.getClass());
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#post(java.net.URL, T, java.util.Map, java.lang.Class)
+	 */
+	@Override
 	public <T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass ) throws Exception
 	{
 		log.debug("Sending POST to " + url);
@@ -359,11 +419,19 @@ public class RestClient
 		return readObject(responseClass, response);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#postData(java.net.URL, java.lang.String, java.io.InputStream, java.lang.Class)
+	 */
+	@Override
 	public <T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass ) throws Exception
 	{
 		return postData(url, filename, content, responseClass, null);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#postData(java.net.URL, java.lang.String, java.io.InputStream, java.lang.Class, java.util.Map)
+	 */
+	@Override
 	public <T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass,
 			Map<String, String> newHeaders ) throws Exception
 	{
@@ -384,11 +452,19 @@ public class RestClient
 		return readObject(responseClass, response);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#put(java.net.URL, T)
+	 */
+	@Override
 	public <T> T put ( URL url, T obj ) throws Exception
 	{
 		return put(url, obj, null);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#put(java.net.URL, T, java.util.Map)
+	 */
+	@Override
 	@SuppressWarnings ( "unchecked" )
 	public <T> T put ( URL url, T obj, Map<String, String> newHeaders ) throws Exception
 	{
@@ -426,17 +502,19 @@ public class RestClient
 
 	}
 
-	/**
-	 * Set an exception translator for server errors
-	 * 
-	 * @param exceptionTranslator
-	 * 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#setExceptionTranslator(com.cloudesire.tisana4j.ExceptionTranslator)
 	 */
+	@Override
 	public void setExceptionTranslator ( ExceptionTranslator exceptionTranslator )
 	{
 		this.exceptionTranslator = exceptionTranslator;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#setHeaders(java.util.Map)
+	 */
+	@Override
 	public void setHeaders ( Map<String, String> headers )
 	{
 		this.headers = headers;
@@ -455,10 +533,10 @@ public class RestClient
 
 	}
 
-	/**
-	 * @param useXml
-	 *            if true client uses xml instead of json.
+	/* (non-Javadoc)
+	 * @see com.cloudesire.tisana4j.RestClientInterface#setUseXml(boolean)
 	 */
+	@Override
 	public void setUseXml(boolean useXml){
 		this.useXml=useXml;
 	}
