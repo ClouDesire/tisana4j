@@ -7,6 +7,9 @@
 	<version>0.0.7-SNAPSHOT</version>
 	<name>tisana4j</name>
 	<description>Yet another (but missing) simple RESTful client library for Java.</description>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 	<dependencies>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
