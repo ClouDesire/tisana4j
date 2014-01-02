@@ -77,7 +77,7 @@ public class RestClient implements RestClientInterface
 	}
 
 	/**
-	 * 
+	 *
 	 * @param skipValidation
 	 *            if true skips server certificate validation for Https
 	 *            connections
@@ -88,7 +88,7 @@ public class RestClient implements RestClientInterface
 	}
 
 	/**
-	 * 
+	 *
 	 * @param username
 	 *            user for authentication
 	 * @param password
@@ -103,7 +103,7 @@ public class RestClient implements RestClientInterface
 	}
 
 	/**
-	 * 
+	 *
 	 * @param username
 	 *            user for authentication
 	 * @param password
@@ -140,7 +140,7 @@ public class RestClient implements RestClientInterface
 	{
 		int responseCode = response.getStatusLine().getStatusCode();
 		if (responseCode < 200 || responseCode >= 300) {
-		    
+
 			if (exceptionTranslator != null)
 			{
 				Exception translatedException = exceptionTranslator.translateError(responseCode, response.getStatusLine()
@@ -241,7 +241,7 @@ public class RestClient implements RestClientInterface
 			return objList;
 		} catch (JsonParseException e)
 		{
-			throw new ParseException("Bad object Class");
+			throw new ParseException("Parsing error: " + e.getOriginalMessage());
 		}
 
 	}
@@ -486,7 +486,7 @@ public class RestClient implements RestClientInterface
 			return obj;
 		} catch (JsonParseException e)
 		{
-			throw new ParseException("Bad object Class");
+			throw new ParseException("Parsing error: " + e.getOriginalMessage());
 		}
 		else try
 		{
@@ -497,7 +497,7 @@ public class RestClient implements RestClientInterface
 			return obj;
 		} catch (JAXBException e)
 		{
-			throw new ParseException("Bad object Class");
+			throw new ParseException("Parsing error: " + e.getMessage());
 		}
 
 	}
