@@ -1,5 +1,10 @@
 package com.cloudesire.tisana4j;
 
+/**
+ * 
+ * @author Tazio Ceri <t.ceri@liberologico.com>
+ * 
+ */
 public class HttpResponseHandlerImpl implements HttpResponseHandler
 {
 	private Integer code;
@@ -15,8 +20,12 @@ public class HttpResponseHandlerImpl implements HttpResponseHandler
 	@Override
 	public HttpResponse getResponse ()
 	{
-		if (code != null && response != null) return new HttpResponse(code, response);
+		if (code != null)
+		{
+			HttpResponse r = new HttpResponse(code, response);
+			code = null;
+			return r;
+		}
 		return null;
 	}
-
 }

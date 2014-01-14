@@ -55,6 +55,8 @@ public interface RestClientInterface
 	 */
 	void setExceptionTranslator ( ExceptionTranslator exceptionTranslator );
 
+	void setHttpResponseHandler ( HttpResponseHandler httpResponseHandler );
+
 	void setHeaders ( Map<String, String> headers );
 
 	/**

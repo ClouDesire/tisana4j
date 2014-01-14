@@ -1,9 +1,20 @@
 package com.cloudesire.tisana4j;
 
+/**
+ * 
+ * @author Tazio Ceri <t.ceri@liberologico.com>
+ * 
+ */
 public class HttpResponse
 {
 	private int code;
 	private String response;
+
+	public HttpResponse(int code, String response)
+	{
+		this.code = code;
+		this.response = response;
+	}
 
 	public int getCode ()
 	{
