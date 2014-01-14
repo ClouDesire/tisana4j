@@ -264,7 +264,7 @@ public class RestClient implements RestClientInterface
 			return objList;
 		} catch (JsonParseException e)
 		{
-			throw new ParseException("Bad object Class");
+			throw new ParseException("Parsing error: " + e.getOriginalMessage());
 		}
 
 	}
@@ -544,7 +544,7 @@ public class RestClient implements RestClientInterface
 			return obj;
 		} catch (JsonParseException e)
 		{
-			throw new ParseException("Bad object Class");
+			throw new ParseException("Parsing error: " + e.getOriginalMessage());
 		}
 		else try
 		{
@@ -555,7 +555,7 @@ public class RestClient implements RestClientInterface
 			return obj;
 		} catch (JAXBException e)
 		{
-			throw new ParseException("Bad object Class");
+			throw new ParseException("Parsing error: " + e.getMessage());
 		}
 
 	}
@@ -645,6 +645,7 @@ public class RestClient implements RestClientInterface
 		return httpResponseHandler;
 	}
 
+	@Override
 	public void setHttpResponseHandler ( HttpResponseHandler httpResponseHandler )
 	{
 		this.httpResponseHandler = httpResponseHandler;
