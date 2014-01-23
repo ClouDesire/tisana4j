@@ -12,6 +12,7 @@ import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
@@ -274,6 +275,7 @@ public class RestClient implements RestClientInterface
 		if (httpClient == null)
 		{
 			PoolingClientConnectionManager cm = new PoolingClientConnectionManager();
+			cm.closeIdleConnections(1, TimeUnit.SECONDS);
 			httpClient = new DefaultHttpClient(cm);
 			if (skipValidation)
 			{
