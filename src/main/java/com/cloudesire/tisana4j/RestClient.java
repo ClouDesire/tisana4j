@@ -1,27 +1,14 @@
 package com.cloudesire.tisana4j;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-
+import com.fasterxml.jackson.core.Base64Variants;
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
+import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
@@ -46,13 +33,22 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.core.Base64Variants;
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class RestClient implements RestClientInterface
 {
@@ -73,51 +69,55 @@ public class RestClient implements RestClientInterface
 	 * Default settings: no authentication and verify if server certificate is
 	 * valid. Uses json. For use xml setUseXml() to true.
 	 */
-	public RestClient()
+	public RestClient ()
 	{
 		this(null, null, false, null);
 	}
 
 	/**
-	 * 
-	 * @param skipValidation
-	 *            if true skips server certificate validation for Https
-	 *            connections
+	 * @param skipValidation if true skips server certificate validation for Https
+	 *                       connections
 	 */
-	public RestClient(boolean skipValidation)
+	public RestClient ( boolean skipValidation )
 	{
 		this(null, null, skipValidation, null);
 	}
 
 	/**
-	 * 
-	 * @param username
-	 *            user for authentication
-	 * @param password
-	 *            password for authentication
-	 * @param skipValidation
-	 *            if true skips server certificate validation for Https
-	 *            connections
+	 * @param username       user for authentication
+	 * @param password       password for authentication
+	 * @param skipValidation if true skips server certificate validation for Https
+	 *                       connections
 	 */
-	public RestClient(String username, String password, boolean skipValidation)
+	public RestClient ( String username, String password, boolean skipValidation )
 	{
 		this(username, password, skipValidation, null);
 	}
 
 	/**
-	 * 
-	 * @param username
-	 *            user for authentication
-	 * @param password
-	 *            password for authentication
-	 * @param skipValidation
-	 *            if true skips server certificate validation for Https
-	 *            connections
-	 * @param headers
-	 *            connection properties that will be added by default to any
-	 *            connection
+	 * @param username       user for authentication
+	 * @param password       password for authentication
+	 * @param skipValidation if true skips server certificate validation for Https
+	 *                       connections
+	 * @param headers        connection properties that will be added by default to any
+	 *                       connection
 	 */
-	public RestClient(String username, String password, boolean skipValidation, Map<String, String> headers)
+	public RestClient ( String username, String password, boolean skipValidation, Map<String, String> headers )
+	{
+		this(username, password, skipValidation, headers, null);
+	}
+
+	/**
+	 * @param username       user for authentication
+	 * @param password       password for authentication
+	 * @param skipValidation if true skips server certificate validation for Https
+	 *                       connections
+	 * @param headers        connection properties that will be added by default to any
+	 *                       connection
+	 * @param ctx            ssl context
+	 */
+	public RestClient (
+			String username, String password, boolean skipValidation, Map<String, String> headers, SSLContext ctx )
 	{
 		super();
 		this.username = username;
@@ -125,6 +125,7 @@ public class RestClient implements RestClientInterface
 		this.skipValidation = skipValidation;
 		authenticated = username != null;
 		this.headers = headers;
+		this.ctx = ctx;
 	}
 
 	private void applyHeaders ( HttpRequest request, Map<String, String> newHeaders )
@@ -149,8 +150,10 @@ public class RestClient implements RestClientInterface
 		{
 			if (exceptionTranslator != null)
 			{
-				Exception translatedException = exceptionTranslator.translateError(responseCode, response
-						.getStatusLine().getReasonPhrase(), response.getEntity().getContent());
+				Exception translatedException = exceptionTranslator.translateError(
+						responseCode, response
+						.getStatusLine().getReasonPhrase(), response.getEntity().getContent()
+				);
 				if (translatedException == null) return;
 				else throw translatedException;
 			}
@@ -317,7 +320,7 @@ public class RestClient implements RestClientInterface
 				return null;
 			}
 		};
-		ctx.init(null, new TrustManager[] { tm }, new SecureRandom());
+		ctx.init(null, new TrustManager[] {tm}, new SecureRandom());
 		return ctx;
 	}
 
@@ -487,7 +490,8 @@ public class RestClient implements RestClientInterface
 	 * java.lang.String, java.io.InputStream, java.lang.Class, java.util.Map)
 	 */
 	@Override
-	public <T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass,
+	public <T> T postData (
+			URL url, String filename, InputStream content, Class<T> responseClass,
 			Map<String, String> newHeaders ) throws Exception
 	{
 		log.debug("Sending binary data with POST to " + url);
@@ -538,26 +542,26 @@ public class RestClient implements RestClientInterface
 	}
 
 	private <T> T readObject ( Class<T> clazz, HttpResponse response ) throws IOException, JsonProcessingException,
-			ParseException
+	ParseException
 	{
-		if (!useXml) try
+		if (! useXml)
 		{
-			T obj = mapper.reader(clazz).readValue(response.getEntity().getContent());
-			return obj;
-		} catch (JsonParseException e)
-		{
-			throw new ParseException("Parsing error: " + e.getOriginalMessage());
+			try
+			{
+				T obj = mapper.reader(clazz).readValue(response.getEntity().getContent());
+				return obj;
+			} catch (JsonParseException e)
+			{
+				throw new ParseException("Parsing error: " + e.getOriginalMessage());
+			}
 		}
-		else try
+		else
 		{
-			JAXBContext jaxbContext = JAXBContext.newInstance(clazz);
-			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-			@SuppressWarnings ( "unchecked" )
-			T obj = (T) jaxbUnmarshaller.unmarshal(response.getEntity().getContent());
+			JacksonXmlModule module = new JacksonXmlModule();
+			module.setDefaultUseWrapper(false);
+			XmlMapper xmlMapper = new XmlMapper(module);
+			T obj = xmlMapper.readValue(response.getEntity().getContent(), clazz);
 			return obj;
-		} catch (JAXBException e)
-		{
-			throw new ParseException("Parsing error: " + e.getMessage());
 		}
 
 	}
@@ -611,34 +615,35 @@ public class RestClient implements RestClientInterface
 	}
 
 	private <T> void writeObject ( T obj, HttpEntityEnclosingRequest request ) throws IOException,
-			JsonGenerationException, MappingException, JsonProcessingException, ParseException
+	JsonGenerationException, MappingException, JsonProcessingException, ParseException
 	{
-		if (!useXml) try
+		if (! useXml)
 		{
-			request.addHeader("Content-type", "application/json");
-			ObjectWriter writer = mapper.writer();
-			String payload = writer.writeValueAsString(obj);
-			StringEntity entity = new StringEntity(payload);
-			log.debug("Payload:\n " + payload);
-			request.setEntity(entity);
-		} catch (JsonMappingException e)
-		{
-			throw new MappingException("Error while mapping Object to Json");
+			try
+			{
+				request.addHeader("Content-type", "application/json");
+				ObjectWriter writer = mapper.writer();
+				String payload = writer.writeValueAsString(obj);
+				StringEntity entity = new StringEntity(payload);
+				log.debug("Payload:\n " + payload);
+				request.setEntity(entity);
+			} catch (JsonMappingException e)
+			{
+				throw new MappingException("Error while mapping Object to Json");
+			}
 		}
-		else try
+		else
 		{
 			request.addHeader("Content-type", "application/xml");
-			JAXBContext jaxbContext = JAXBContext.newInstance(obj.getClass());
-			Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			jaxbMarshaller.marshal(obj, baos);
+			JacksonXmlModule module = new JacksonXmlModule();
+			module.setDefaultUseWrapper(false);
+			XmlMapper mapper = new XmlMapper(module);
+			mapper.writeValue(baos, obj);
 			String payload = baos.toString();
 			StringEntity entity = new StringEntity(payload);
 			log.debug("Payload:\n " + payload);
 			request.setEntity(entity);
-		} catch (JAXBException e)
-		{
-			throw new MappingException("Error while mapping Object to xml");
 		}
 	}
 
