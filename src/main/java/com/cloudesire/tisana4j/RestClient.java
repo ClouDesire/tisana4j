@@ -7,8 +7,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.dataformat.xml.JacksonXmlModule;
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
@@ -29,6 +27,8 @@ import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,6 +36,10 @@ import org.slf4j.LoggerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -280,13 +284,15 @@ public class RestClient implements RestClientInterface
 			PoolingClientConnectionManager cm = new PoolingClientConnectionManager();
 			cm.closeIdleConnections(1, TimeUnit.SECONDS);
 			httpClient = new DefaultHttpClient(cm);
+			HttpParams params = httpClient.getParams();
+			params.setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 30000);
+			params.setIntParameter(CoreConnectionPNames.SO_TIMEOUT, 30000);
 			if (skipValidation)
 			{
 				log.debug("Configuring HTTPS with no validation");
 				SSLSocketFactory sf = new SSLSocketFactory(getSSLContext(), new AllowAllHostnameVerifier());
 				Scheme https = new Scheme("https", 443, sf);
 				httpClient.getConnectionManager().getSchemeRegistry().register(https);
-
 			}
 
 		}
@@ -542,7 +548,7 @@ public class RestClient implements RestClientInterface
 	}
 
 	private <T> T readObject ( Class<T> clazz, HttpResponse response ) throws IOException, JsonProcessingException,
-	ParseException
+	ParseException, JAXBException
 	{
 		if (! useXml)
 		{
@@ -557,10 +563,9 @@ public class RestClient implements RestClientInterface
 		}
 		else
 		{
-			JacksonXmlModule module = new JacksonXmlModule();
-			module.setDefaultUseWrapper(false);
-			XmlMapper xmlMapper = new XmlMapper(module);
-			T obj = xmlMapper.readValue(response.getEntity().getContent(), clazz);
+			JAXBContext contextB = JAXBContext.newInstance(clazz);
+			Unmarshaller unmarshallerB = contextB.createUnmarshaller();
+			T obj = (T) unmarshallerB.unmarshal(response.getEntity().getContent());
 			return obj;
 		}
 
@@ -615,7 +620,7 @@ public class RestClient implements RestClientInterface
 	}
 
 	private <T> void writeObject ( T obj, HttpEntityEnclosingRequest request ) throws IOException,
-	JsonGenerationException, MappingException, JsonProcessingException, ParseException
+	JsonGenerationException, MappingException, JsonProcessingException, ParseException, JAXBException
 	{
 		if (! useXml)
 		{
@@ -636,10 +641,9 @@ public class RestClient implements RestClientInterface
 		{
 			request.addHeader("Content-type", "application/xml");
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			JacksonXmlModule module = new JacksonXmlModule();
-			module.setDefaultUseWrapper(false);
-			XmlMapper mapper = new XmlMapper(module);
-			mapper.writeValue(baos, obj);
+			JAXBContext context = JAXBContext.newInstance(obj.getClass());
+			Marshaller m = context.createMarshaller();
+			m.marshal(obj, baos);
 			String payload = baos.toString();
 			StringEntity entity = new StringEntity(payload);
 			log.debug("Payload:\n " + payload);
