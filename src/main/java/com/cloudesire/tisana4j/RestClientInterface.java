@@ -38,6 +38,8 @@ public interface RestClientInterface
 
 	<T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass ) throws Exception;
 
+	<T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass, Map<String, String> responseHeaders ) throws Exception;
+
 	<T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass ) throws Exception;
 
 	<T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass,

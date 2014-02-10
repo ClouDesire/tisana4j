@@ -454,20 +454,33 @@ public class RestClient implements RestClientInterface
 		return (T) post(url, obj, newHeaders, obj.getClass());
 	}
 
+	@Override
+	public <T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass ) throws Exception
+	{
+		return post(url, obj, newHeaders, responseClass, null);
+	}
+
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.cloudesire.tisana4j.RestClientInterface#post(java.net.URL, T,
 	 * java.util.Map, java.lang.Class)
 	 */
 	@Override
-	public <T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass ) throws Exception
+	public <T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass, Map<String, String> responseHeaders ) throws Exception
 	{
 		log.debug("Sending POST to " + url);
 		HttpPost post = new HttpPost(url.toURI());
 		setupMethod(post, newHeaders);
 		if (obj != null) writeObject(obj, post);
 		HttpResponse response = getHttpClient().execute(post);
+		if(responseHeaders != null && response.getAllHeaders().length != 0)
+		{
+			for(Header header : response.getAllHeaders())
+			{
+				responseHeaders.put(header.getName(), header.getValue());
+			}
+		}
 		checkError(response);
 		if (responseClass == null)
 		{
