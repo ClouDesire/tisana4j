@@ -285,8 +285,8 @@ public class RestClient implements RestClientInterface
 			cm.closeIdleConnections(1, TimeUnit.SECONDS);
 			httpClient = new DefaultHttpClient(cm);
 			HttpParams params = httpClient.getParams();
-			params.setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 30000);
-			params.setIntParameter(CoreConnectionPNames.SO_TIMEOUT, 30000);
+			params.setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 60000);
+			params.setIntParameter(CoreConnectionPNames.SO_TIMEOUT, 60000);
 			if (skipValidation)
 			{
 				log.debug("Configuring HTTPS with no validation");
