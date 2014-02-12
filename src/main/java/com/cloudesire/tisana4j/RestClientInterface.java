@@ -12,6 +12,8 @@ public interface RestClientInterface
 
 	void delete ( URL url, Map<String, String> newHeaders ) throws Exception;
 
+	void delete ( URL url, Map<String, String> newHeaders, Map<String, String> responseHeaders ) throws Exception;
+
 	<T> T get ( URL url, Class<T> clazz ) throws Exception;
 
 	<T> T get ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws Exception;

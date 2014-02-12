@@ -186,11 +186,31 @@ public class RestClient implements RestClientInterface
 	@Override
 	public void delete ( URL url, Map<String, String> newHeaders ) throws Exception
 	{
+		delete(url, newHeaders, null);
+		return;
+	}
+
+	/*
+	 * (non-Javadoc)
+	 *
+	 * @see com.cloudesire.tisana4j.RestClientInterface#delete(java.net.URL,
+	 * java.util.Map. java.util.Map)
+	 */
+	@Override
+	public void delete ( URL url, Map<String, String> newHeaders, Map<String, String> responseHeaders ) throws Exception
+	{
 		log.debug("Sending DELETE to " + url);
 		HttpDelete delete = new HttpDelete(url.toURI());
 
 		setupMethod(delete, newHeaders);
 		HttpResponse response = getHttpClient().execute(delete);
+		if(responseHeaders != null && response.getAllHeaders().length != 0)
+		{
+			for(Header header : response.getAllHeaders())
+			{
+				responseHeaders.put(header.getName(), header.getValue());
+			}
+		}
 		checkError(response);
 		return;
 	}
