@@ -17,7 +17,7 @@
 	</licenses>
 
 	<scm>
-		<developerConnection>scm:git:https://github.com/ClouDesire/tisana4j.git</developerConnection>
+		<developerConnection>scm:git:ssh://git@github.com/ClouDesire/tisana4j.git</developerConnection>
 	</scm>
 
 	<properties>
