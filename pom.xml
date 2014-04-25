@@ -6,6 +6,16 @@
 	<version>0.0.10-SNAPSHOT</version>
 	<name>tisana4j</name>
 	<description>Yet another (but missing) simple RESTful client library for Java.</description>
+	<url>https://github.com/ClouDesire/tisana4j</url>
+
+	<licenses>
+		<license>
+		  <name>Apache License, Version 2.0</name>
+		  <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		  <distribution>repo</distribution>
+		</license>
+	</licenses>
+
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
@@ -30,11 +40,11 @@
 			<artifactId>httpmime</artifactId>
 			<version>4.2.5</version>
 		</dependency>
-        <dependency>
-            <groupId>org.codehaus.woodstox</groupId>
-            <artifactId>woodstox-core-asl</artifactId>
-            <version>4.2.0</version>
-        </dependency>
+		<dependency>
+			<groupId>org.codehaus.woodstox</groupId>
+			<artifactId>woodstox-core-asl</artifactId>
+			<version>4.2.0</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<plugins>
@@ -46,6 +56,33 @@
 					<source>1.7</source>
 					<target>1.7</target>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>2.2.1</version>
+				<executions>
+				<execution>
+				  <id>attach-sources</id>
+				  <goals>
+					<goal>jar-no-fork</goal>
+				  </goals>
+				</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-gpg-plugin</artifactId>
+				<version>1.5</version>
+				<executions>
+				<execution>
+				  <id>sign-artifacts</id>
+				  <phase>verify</phase>
+				  <goals>
+					<goal>sign</goal>
+				  </goals>
+				</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>
@@ -63,4 +100,14 @@
 			</plugin>
 		</plugins>
 	</reporting>
+	<distributionManagement>
+		  <snapshotRepository>
+				<id>ossrh</id>
+				<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		  </snapshotRepository>
+		  <repository>
+				<id>ossrh</id>
+				<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		  </repository>
+	</distributionManagement>
 </project>
