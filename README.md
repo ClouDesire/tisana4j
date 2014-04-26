@@ -3,6 +3,20 @@ tisana4j
 
 Yet another (but missing) simple RESTful client library for Java. (BETA)
 
+Usage
+=====
+
+```
+<dependency>
+    <groupId>com.cloudesire</groupId>
+    <artifactId>tisana4j</artifactId>
+    <version>0.0.10</version>
+</dependency>
+```
+
+Example
+=======
+
 ```java
 public class Test {
 	private static class NetworkAddress {
