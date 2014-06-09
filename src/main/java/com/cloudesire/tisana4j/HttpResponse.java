@@ -2,7 +2,7 @@ package com.cloudesire.tisana4j;
 
 /**
  * 
- * @author Tazio Ceri <t.ceri@liberologico.com>
+ * @author Tazio Ceri
  * 
  */
 public class HttpResponse
