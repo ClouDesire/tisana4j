@@ -557,7 +557,11 @@ public class RestClient implements RestClientInterface
 				if (translatedException == null) return;
 				else throw translatedException;
 			}
-			else throw new RestException(responseCode, response.getStatusLine().getReasonPhrase());
+			else
+			{
+				EntityUtils.consumeQuietly(response.getEntity());
+				throw new RestException(responseCode, response.getStatusLine().getReasonPhrase());
+			}
 		}
 	}
 
