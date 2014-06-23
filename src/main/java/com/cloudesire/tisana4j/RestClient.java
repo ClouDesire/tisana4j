@@ -250,10 +250,10 @@ public class RestClient implements RestClientInterface
 		HttpGet get = new HttpGet(url.toURI());
 		setupMethod(get, newHeaders);
 		HttpResponse response = execute(get);
-		try
+		try(InputStream stream = response.getEntity().getContent())
 		{
 			List<T> objList = mapper.reader(mapper.getTypeFactory().constructCollectionType(List.class, clazz))
-					.readValue(response.getEntity().getContent());
+					.readValue(stream);
 			return objList;
 		} catch (JsonParseException e)
 		{
@@ -552,8 +552,13 @@ public class RestClient implements RestClientInterface
 		{
 			if (exceptionTranslator != null)
 			{
-				Exception translatedException = exceptionTranslator.translateError(responseCode, response
-						.getStatusLine().getReasonPhrase(), response.getEntity().getContent());
+				Exception translatedException;
+				try (InputStream stream = response.getEntity().getContent())
+				{
+					translatedException = exceptionTranslator.translateError(responseCode, response
+						.getStatusLine().getReasonPhrase(), stream);
+				}
+
 				if (translatedException == null) return;
 				else throw translatedException;
 			}
@@ -591,7 +596,7 @@ public class RestClient implements RestClientInterface
 		if (response.getStatusLine().getStatusCode() == 204)
 		{
 			log.debug("Consuming quietly the response entity since server returned no content");
-			EntityUtils.consume(response.getEntity());
+			EntityUtils.consumeQuietly(response.getEntity());
 		}
 
 		checkError(response);
@@ -657,11 +662,12 @@ public class RestClient implements RestClientInterface
 	{
 		if (!useXml)
 		{
-			try
+			try(InputStream stream = response.getEntity().getContent())
 			{
-				T obj = mapper.reader(clazz).readValue(response.getEntity().getContent());
+				T obj = mapper.reader(clazz).readValue(stream);
 				return obj;
-			} catch (JsonParseException e)
+			}
+			catch (JsonParseException e)
 			{
 				throw new ParseException("Parsing error: " + e.getOriginalMessage());
 			}
@@ -670,7 +676,11 @@ public class RestClient implements RestClientInterface
 		{
 			JAXBContext contextB = JAXBContext.newInstance(clazz);
 			Unmarshaller unmarshallerB = contextB.createUnmarshaller();
-			T obj = (T) unmarshallerB.unmarshal(response.getEntity().getContent());
+			T obj;
+			try(InputStream stream = response.getEntity().getContent())
+			{
+				obj = (T) unmarshallerB.unmarshal(stream);
+			}
 			return obj;
 		}
 
