@@ -290,6 +290,7 @@ public class RestClient implements RestClientInterface
 		HttpHead head = new HttpHead(url.toURI());
 		setupMethod(head, newHeaders);
 		HttpResponse response = execute(head);
+		EntityUtils.consumeQuietly(response.getEntity());
 
 		Map<String, String> headers = new HashMap<>();
 		Header[] allHeaders = response.getAllHeaders();
@@ -322,6 +323,7 @@ public class RestClient implements RestClientInterface
 		HttpOptions options = new HttpOptions(url.toURI());
 		setupMethod(options, newHeaders);
 		HttpResponse response = execute(options);
+		EntityUtils.consumeQuietly(response.getEntity());
 		String allow = null;
 		Header[] allHeaders = response.getAllHeaders();
 		for (int i = 0; i < allHeaders.length; i++)
@@ -356,7 +358,8 @@ public class RestClient implements RestClientInterface
 		HttpPatch patch = new HttpPatch(url.toURI());
 		setupMethod(patch, newHeaders);
 		writeObject(paramMap, patch);
-		execute(patch);
+		HttpResponse response = execute(patch);
+		EntityUtils.consumeQuietly(response.getEntity());
 		return;
 
 	}
@@ -455,7 +458,11 @@ public class RestClient implements RestClientInterface
 		entity.addPart("file", body);
 		post.setEntity(entity);
 		HttpResponse response = execute(post);
-		if (responseClass == null || response.getEntity() == null) return null;
+		if (responseClass == null || response.getEntity() == null)
+		{
+			EntityUtils.consumeQuietly(response.getEntity());
+			return null;
+		}
 		return readObject(responseClass, response);
 	}
 
