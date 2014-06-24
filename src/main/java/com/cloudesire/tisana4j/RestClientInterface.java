@@ -34,6 +34,10 @@ public interface RestClientInterface
 
 	void patch ( URL url, Map<String, String> paramMap, Map<String, String> newHeaders ) throws Exception;
 
+	<T> T patchEntity ( URL url, Map<String, String> paramMap, Class<T> clazz ) throws Exception;
+
+	<T> T patchEntity ( URL url, Map<String, String> paramMap, Class<T> clazz, Map<String, String> newHeaders ) throws Exception;
+
 	<T> T post ( URL url, T obj ) throws Exception;
 
 	<T> T post ( URL url, T obj, Map<String, String> newHeaders ) throws Exception;

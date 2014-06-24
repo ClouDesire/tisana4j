@@ -150,19 +150,18 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see com.cloudesire.tisana4j.RestClientInterface#delete(java.net.URL)
 	 */
 	@Override
 	public void delete ( URL url ) throws Exception
 	{
 		delete(url, null);
-		return;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see com.cloudesire.tisana4j.RestClientInterface#delete(java.net.URL,
 	 * java.util.Map)
 	 */
@@ -170,12 +169,11 @@ public class RestClient implements RestClientInterface
 	public void delete ( URL url, Map<String, String> newHeaders ) throws Exception
 	{
 		delete(url, newHeaders, null);
-		return;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see com.cloudesire.tisana4j.RestClientInterface#delete(java.net.URL,
 	 * java.util.Map. java.util.Map)
 	 */
@@ -193,12 +191,11 @@ public class RestClient implements RestClientInterface
 				responseHeaders.put(header.getName(), header.getValue());
 			}
 		}
-		return;
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see com.cloudesire.tisana4j.RestClientInterface#get(java.net.URL,
 	 * java.lang.Class)
 	 */
@@ -210,7 +207,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see com.cloudesire.tisana4j.RestClientInterface#get(java.net.URL,
 	 * java.lang.Class, java.util.Map)
 	 */
@@ -225,7 +222,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * com.cloudesire.tisana4j.RestClientInterface#getCollection(java.net.URL,
 	 * java.lang.Class)
@@ -239,7 +236,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * com.cloudesire.tisana4j.RestClientInterface#getCollection(java.net.URL,
 	 * java.lang.Class, java.util.Map)
@@ -250,7 +247,7 @@ public class RestClient implements RestClientInterface
 		HttpGet get = new HttpGet(url.toURI());
 		setupMethod(get, newHeaders);
 		HttpResponse response = execute(get);
-		try(InputStream stream = response.getEntity().getContent())
+		try (InputStream stream = response.getEntity().getContent())
 		{
 			List<T> objList = mapper.reader(mapper.getTypeFactory().constructCollectionType(List.class, clazz))
 					.readValue(stream);
@@ -269,7 +266,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see com.cloudesire.tisana4j.RestClientInterface#head(java.net.URL)
 	 */
 	@Override
@@ -280,7 +277,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see com.cloudesire.tisana4j.RestClientInterface#head(java.net.URL,
 	 * java.util.Map)
 	 */
@@ -302,7 +299,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see com.cloudesire.tisana4j.RestClientInterface#options(java.net.URL)
 	 */
 	@Override
@@ -313,7 +310,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see com.cloudesire.tisana4j.RestClientInterface#options(java.net.URL,
 	 * java.util.Map)
 	 */
@@ -334,7 +331,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see com.cloudesire.tisana4j.RestClientInterface#patch(java.net.URL,
 	 * java.util.Map)
 	 */
@@ -342,13 +339,41 @@ public class RestClient implements RestClientInterface
 	public void patch ( URL url, Map<String, String> paramMap ) throws Exception
 	{
 		patch(url, paramMap, null);
-		return;
-
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
+	 * @see
+	 * com.cloudesire.tisana4j.RestClientInterface#patchEntity(java.net.URL,
+	 * java.util.Map)
+	 */
+	@Override
+	public <T> T patchEntity ( URL url, Map<String, String> paramMap, Class<T> clazz ) throws Exception
+	{
+		return patchEntity(url, paramMap, clazz, null);
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * com.cloudesire.tisana4j.RestClientInterface#patchEntity(java.net.URL,
+	 * java.util.Map)
+	 */
+	@Override
+	public <T> T patchEntity ( URL url, Map<String, String> paramMap, Class<T> clazz, Map<String, String> newHeaders )
+			throws Exception
+	{
+		HttpPatch patch = new HttpPatch(url.toURI());
+		setupMethod(patch, newHeaders);
+		writeObject(paramMap, patch);
+		return readObject(clazz, execute(patch));
+	}
+
+	/*
+	 * (non-Javadoc)
+	 * 
 	 * @see com.cloudesire.tisana4j.RestClientInterface#patch(java.net.URL,
 	 * java.util.Map, java.util.Map)
 	 */
@@ -360,13 +385,11 @@ public class RestClient implements RestClientInterface
 		writeObject(paramMap, patch);
 		HttpResponse response = execute(patch);
 		EntityUtils.consumeQuietly(response.getEntity());
-		return;
-
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see com.cloudesire.tisana4j.RestClientInterface#post(java.net.URL, T)
 	 */
 	@Override
@@ -378,7 +401,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see com.cloudesire.tisana4j.RestClientInterface#post(java.net.URL, T,
 	 * java.util.Map)
 	 */
@@ -397,7 +420,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see com.cloudesire.tisana4j.RestClientInterface#post(java.net.URL, T,
 	 * java.util.Map, java.lang.Class)
 	 */
@@ -426,24 +449,12 @@ public class RestClient implements RestClientInterface
 		return readObject(responseClass, response);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see com.cloudesire.tisana4j.RestClientInterface#postData(java.net.URL,
-	 * java.lang.String, java.io.InputStream, java.lang.Class)
-	 */
 	@Override
 	public <T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass ) throws Exception
 	{
 		return postData(url, filename, content, responseClass, null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see com.cloudesire.tisana4j.RestClientInterface#postData(java.net.URL,
-	 * java.lang.String, java.io.InputStream, java.lang.Class, java.util.Map)
-	 */
 	@Override
 	public <T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass,
 			Map<String, String> newHeaders ) throws Exception
@@ -468,7 +479,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see com.cloudesire.tisana4j.RestClientInterface#put(java.net.URL, T)
 	 */
 	@Override
@@ -479,7 +490,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see com.cloudesire.tisana4j.RestClientInterface#put(java.net.URL, T,
 	 * java.util.Map)
 	 */
@@ -497,7 +508,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * com.cloudesire.tisana4j.RestClientInterface#setExceptionTranslator(com
 	 * .cloudesire.tisana4j.ExceptionTranslator)
@@ -510,7 +521,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see
 	 * com.cloudesire.tisana4j.RestClientInterface#setHeaders(java.util.Map)
 	 */
@@ -528,7 +539,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see com.cloudesire.tisana4j.RestClientInterface#setUseXml(boolean)
 	 */
 	@Override
@@ -545,7 +556,6 @@ public class RestClient implements RestClientInterface
 
 		for (String k : mergedHeaders.keySet())
 			request.addHeader(k, mergedHeaders.get(k));
-		return;
 	}
 
 	private void checkError ( HttpResponse response ) throws Exception
@@ -562,8 +572,8 @@ public class RestClient implements RestClientInterface
 				Exception translatedException;
 				try (InputStream stream = response.getEntity().getContent())
 				{
-					translatedException = exceptionTranslator.translateError(responseCode, response
-						.getStatusLine().getReasonPhrase(), stream);
+					translatedException = exceptionTranslator.translateError(responseCode, response.getStatusLine()
+							.getReasonPhrase(), stream);
 				}
 
 				if (translatedException == null) return;
@@ -579,7 +589,7 @@ public class RestClient implements RestClientInterface
 
 	/**
 	 * Internal execute, log headers, check for errors
-	 *
+	 * 
 	 * @param request
 	 * @return HttpResponse
 	 * @throws Exception
@@ -669,12 +679,11 @@ public class RestClient implements RestClientInterface
 	{
 		if (!useXml)
 		{
-			try(InputStream stream = response.getEntity().getContent())
+			try (InputStream stream = response.getEntity().getContent())
 			{
 				T obj = mapper.reader(clazz).readValue(stream);
 				return obj;
-			}
-			catch (JsonParseException e)
+			} catch (JsonParseException e)
 			{
 				throw new ParseException("Parsing error: " + e.getOriginalMessage());
 			}
@@ -684,7 +693,7 @@ public class RestClient implements RestClientInterface
 			JAXBContext contextB = JAXBContext.newInstance(clazz);
 			Unmarshaller unmarshallerB = contextB.createUnmarshaller();
 			T obj;
-			try(InputStream stream = response.getEntity().getContent())
+			try (InputStream stream = response.getEntity().getContent())
 			{
 				obj = (T) unmarshallerB.unmarshal(stream);
 			}
@@ -736,4 +745,5 @@ public class RestClient implements RestClientInterface
 			request.setEntity(entity);
 		}
 	}
+
 }
