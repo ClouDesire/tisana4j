@@ -24,6 +24,12 @@
 			<organization>ClouDesire</organization>
 			<organizationUrl>http://www.cloudesire.com</organizationUrl>
 		</developer>
+		<developer>
+			<name>Paolo Magnani</name>
+			<email>paolo.magnani@cloudesire.com</email>
+			<organization>ClouDesire</organization>
+			<organizationUrl>http://www.cloudesire.com</organizationUrl>
+		</developer>
 	</developers>
 
 	<scm>
@@ -36,6 +42,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -107,6 +114,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
 	<build>
 		<plugins>
 			<plugin>
