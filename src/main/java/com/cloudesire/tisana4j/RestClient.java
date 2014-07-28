@@ -586,11 +586,12 @@ public class RestClient implements RestClientInterface
 			try (InputStream stream = response.getEntity().getContent())
 			{
 				ContentType type = ContentType.getOrDefault(response.getEntity());
-				String errorStream = IOUtils.toString(stream, type.getCharset().name());
-				
+				String charset = type.getCharset() != null ? type.getCharset().name() : "UTF-8";
+				String errorStream = IOUtils.toString(stream, charset);
+
 				RestException translatedException = exceptionTranslator.translateException(responseCode, response
 					.getStatusLine().getReasonPhrase(), errorStream);
-				
+
 				if (translatedException != null) throw translatedException;
 			} catch (IllegalStateException | IOException e)
 			{
