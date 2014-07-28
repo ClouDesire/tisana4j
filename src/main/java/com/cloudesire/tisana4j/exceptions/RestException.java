@@ -1,12 +1,12 @@
-package com.cloudesire.tisana4j;
+package com.cloudesire.tisana4j.exceptions;
 
 public class RestException extends Exception
 {
 
 	private static final long serialVersionUID = 8156589269399467370L;
-	private final int responseCode;
+	private final Integer responseCode;
 
-	public RestException(int responseCode, String msgError)
+	public RestException(Integer responseCode, String msgError)
 	{
 		super(msgError);
 		this.responseCode = responseCode;

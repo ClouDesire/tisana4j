@@ -1,8 +1,10 @@
 package com.cloudesire.tisana4j.test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.net.URL;
 import java.util.HashMap;
@@ -18,7 +20,14 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.cloudesire.tisana4j.ExceptionTranslator;
 import com.cloudesire.tisana4j.RestClient;
+import com.cloudesire.tisana4j.exceptions.AccessDeniedException;
+import com.cloudesire.tisana4j.exceptions.BadRequestException;
+import com.cloudesire.tisana4j.exceptions.InternalServerErrorException;
+import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
+import com.cloudesire.tisana4j.exceptions.RestException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class HTTPTest
 {
@@ -36,6 +45,47 @@ public class HTTPTest
 			this.id = id;
 		}
 	}
+	public static class testExceptionTranslator implements ExceptionTranslator
+	{
+
+		@SuppressWarnings ( "unchecked" )
+		@Override
+		public RestException translateException ( int responseCode, String responseMessage,
+				String errorStream )
+		{
+			if(responseCode!=500) return null;
+			ObjectMapper mapper = new ObjectMapper();
+			try
+			{
+				ErrorDto obj = mapper.reader(ErrorDto.class).readValue(errorStream);
+				return new RestException(responseCode , obj.getErrorMsg());
+			} catch (Exception e)
+			{
+				return null;
+			}
+		}
+		
+	}
+	public static class ErrorDto
+	{
+		private String errorMsg;
+		
+		public ErrorDto (String errorMsg)
+		{
+			this.errorMsg=errorMsg;
+		}
+		
+		public String getErrorMsg ()
+		{
+			return errorMsg;
+		}
+
+		public void setErrorMsg ( String errorMsg )
+		{
+			this.errorMsg = errorMsg;
+		}
+
+	}
 
 	private LocalTestServer server = null;
 	private String serverUrl;
@@ -47,6 +97,7 @@ public class HTTPTest
 	private final HttpRequestHandler postHandler = new PostHttpRequestHandler();
 	private final HttpRequestHandler putHandler = new PutHttpRequestHandler();
 	private final HttpRequestHandler patchHandler = new PatchHttpRequestHandler();
+	private final HttpRequestHandler serverErrorHandler = new ServerErrorHandler();
 	RestClient client = new RestClient(true);
 
 	@Before
@@ -59,6 +110,7 @@ public class HTTPTest
 		server.register("/create/*", postHandler);
 		server.register("/update/*", putHandler);
 		server.register("/patch/*", patchHandler);
+		server.register("/fail/*", serverErrorHandler);
 		server.start();
 
 		// report how to access the server
@@ -119,6 +171,72 @@ public class HTTPTest
 		Resource response = client.put(new URL(serverUrl + "/update/" + resourceId), resource);
 		assertNotNull(response.getId());
 		assertTrue(response.getId().equals(resourceId));
+	}
+
+	@Test
+	public void testInternalServerError () throws Exception
+	{
+		try
+		{
+			client.get(new URL(serverUrl + "/fail/500"), Resource.class);
+			fail();
+		} catch (Exception e)
+		{
+			if (!(e instanceof InternalServerErrorException)) fail();
+		}
+	}
+	@Test
+	public void testBadRequestError () throws Exception
+	{
+		try
+		{
+			client.get(new URL(serverUrl + "/fail/400"), Resource.class);
+			fail();
+		} catch (Exception e)
+		{
+			if (!(e instanceof BadRequestException)) fail();
+		}
+	}
+	@Test
+	public void testAccesDeniedError () throws Exception
+	{
+		try
+		{
+			client.get(new URL(serverUrl + "/fail/403"), Resource.class);
+			fail();
+		} catch (Exception e)
+		{
+			if (!(e instanceof AccessDeniedException)) fail();
+		}
+	}
+	@Test
+	public void testResourceNotFoundError () throws Exception
+	{
+		try
+		{
+			client.get(new URL(serverUrl + "/fail/404"), Resource.class);
+			fail();
+		} catch (Exception e)
+		{
+			if (!(e instanceof ResourceNotFoundException)) fail();
+		}
+	}
+	@Test
+	public void testTranslateError () throws Exception
+	{
+		RestClient client2 = new RestClient(true);
+		
+		try
+		{
+			client2.get(new URL(serverUrl + "/fail/500"), Resource.class);
+			fail();
+		} catch (Exception e)
+		{
+			if (!(e instanceof RestException)) fail();
+			RestException re = (RestException) e;
+			assertEquals(500,re.getResponseCode());
+			assertEquals("Internal Server Error",re.getMessage());
+		}
 	}
 
 	@After

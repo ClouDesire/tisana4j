@@ -1,18 +1,18 @@
 package com.cloudesire.tisana4j;
 
-import java.io.InputStream;
+import com.cloudesire.tisana4j.exceptions.RestException;
+
 
 /**
  * Optional exception translator to handle errors with custom Exceptions.
  * 
- * @author d.napolitano
  * 
  */
 public interface ExceptionTranslator
 {
 	/**
 	 * Return the proper exception for the received response, or null to
-	 * suppress the error.
+	 * throw the tisana default exception.
 	 * 
 	 * @param responseCode
 	 *            HTTP response code
@@ -20,7 +20,7 @@ public interface ExceptionTranslator
 	 *            HTTP response status phrase
 	 * @param errorStream
 	 *            Content of the response
-	 * @return the exception to throw, or null to suppress the error.
+	 * @return the exception to throw, or null to throw tisana default exception.
 	 */
-	public Exception translateError ( int responseCode, String responseMessage, InputStream errorStream );
+	public <T extends RestException > T  translateException ( int responseCode, String responseMessage, String errorStream );
 }

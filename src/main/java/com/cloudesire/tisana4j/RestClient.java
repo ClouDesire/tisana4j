@@ -3,6 +3,8 @@ package com.cloudesire.tisana4j;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -22,10 +24,12 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
@@ -38,6 +42,7 @@ import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.InputStreamBody;
@@ -49,11 +54,16 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.cloudesire.tisana4j.exceptions.AccessDeniedException;
+import com.cloudesire.tisana4j.exceptions.BadRequestException;
+import com.cloudesire.tisana4j.exceptions.DefaultExceptionTranslator;
+import com.cloudesire.tisana4j.exceptions.InternalServerErrorException;
+import com.cloudesire.tisana4j.exceptions.ParseException;
+import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
+import com.cloudesire.tisana4j.exceptions.RestException;
+import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
 import com.fasterxml.jackson.core.Base64Variants;
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
@@ -64,7 +74,7 @@ public class RestClient implements RestClientInterface
 	private SSLContext ctx;
 	private final boolean authenticated;
 	private boolean useXml = false;
-	private ExceptionTranslator exceptionTranslator;
+	private ExceptionTranslator exceptionTranslator = new DefaultExceptionTranslator();
 	private HttpResponseHandler httpResponseHandler;
 	private final ObjectMapper mapper = new ObjectMapper();
 	private final boolean skipValidation;
@@ -154,7 +164,7 @@ public class RestClient implements RestClientInterface
 	 * @see com.cloudesire.tisana4j.RestClientInterface#delete(java.net.URL)
 	 */
 	@Override
-	public void delete ( URL url ) throws Exception
+	public void delete ( URL url ) throws URISyntaxException, RestException, RuntimeRestException
 	{
 		delete(url, null);
 	}
@@ -166,7 +176,7 @@ public class RestClient implements RestClientInterface
 	 * java.util.Map)
 	 */
 	@Override
-	public void delete ( URL url, Map<String, String> newHeaders ) throws Exception
+	public void delete ( URL url, Map<String, String> newHeaders ) throws URISyntaxException, RestException, RuntimeRestException
 	{
 		delete(url, newHeaders, null);
 	}
@@ -178,8 +188,8 @@ public class RestClient implements RestClientInterface
 	 * java.util.Map. java.util.Map)
 	 */
 	@Override
-	public void delete ( URL url, Map<String, String> newHeaders, Map<String, String> responseHeaders )
-			throws Exception
+	public void delete ( URL url, Map<String, String> newHeaders, Map<String, String> responseHeaders ) throws URISyntaxException, RestException, RuntimeRestException
+			
 	{
 		HttpDelete delete = new HttpDelete(url.toURI());
 		setupMethod(delete, newHeaders);
@@ -200,7 +210,7 @@ public class RestClient implements RestClientInterface
 	 * java.lang.Class)
 	 */
 	@Override
-	public <T> T get ( URL url, Class<T> clazz ) throws Exception
+	public <T> T get ( URL url, Class<T> clazz ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
 	{
 		return get(url, clazz, null);
 	}
@@ -212,7 +222,7 @@ public class RestClient implements RestClientInterface
 	 * java.lang.Class, java.util.Map)
 	 */
 	@Override
-	public <T> T get ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws Exception
+	public <T> T get ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws URISyntaxException, ParseException, RuntimeRestException, RestException
 	{
 		log.debug("Sending GET to " + url);
 		HttpGet get = new HttpGet(url.toURI());
@@ -228,7 +238,7 @@ public class RestClient implements RestClientInterface
 	 * java.lang.Class)
 	 */
 	@Override
-	public <T> List<T> getCollection ( URL url, Class<T> clazz ) throws Exception
+	public <T> List<T> getCollection ( URL url, Class<T> clazz ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
 	{
 		return getCollection(url, clazz, null);
 
@@ -242,19 +252,25 @@ public class RestClient implements RestClientInterface
 	 * java.lang.Class, java.util.Map)
 	 */
 	@Override
-	public <T> List<T> getCollection ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws Exception
+	public <T> List<T> getCollection ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
 	{
 		HttpGet get = new HttpGet(url.toURI());
 		setupMethod(get, newHeaders);
 		HttpResponse response = execute(get);
 		try (InputStream stream = response.getEntity().getContent())
 		{
-			List<T> objList = mapper.reader(mapper.getTypeFactory().constructCollectionType(List.class, clazz))
-					.readValue(stream);
-			return objList;
-		} catch (JsonParseException e)
+			try
+			{
+				List<T> objList = mapper.reader(mapper.getTypeFactory().constructCollectionType(List.class, clazz))
+						.readValue(stream);
+				return objList;
+			} catch (JsonProcessingException  e)
+			{
+				throw new ParseException(e);
+			}
+		} catch ( IOException e)
 		{
-			throw new ParseException("Parsing error: " + e.getOriginalMessage());
+			throw new RuntimeRestException(e);
 		}
 
 	}
@@ -282,7 +298,7 @@ public class RestClient implements RestClientInterface
 	 * java.util.Map)
 	 */
 	@Override
-	public Map<String, String> head ( URL url, Map<String, String> newHeaders ) throws Exception
+	public Map<String, String> head ( URL url, Map<String, String> newHeaders ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
 	{
 		HttpHead head = new HttpHead(url.toURI());
 		setupMethod(head, newHeaders);
@@ -315,7 +331,7 @@ public class RestClient implements RestClientInterface
 	 * java.util.Map)
 	 */
 	@Override
-	public String[] options ( URL url, Map<String, String> newHeaders ) throws Exception
+	public String[] options ( URL url, Map<String, String> newHeaders ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
 	{
 		HttpOptions options = new HttpOptions(url.toURI());
 		setupMethod(options, newHeaders);
@@ -325,7 +341,7 @@ public class RestClient implements RestClientInterface
 		Header[] allHeaders = response.getAllHeaders();
 		for (int i = 0; i < allHeaders.length; i++)
 			if (allHeaders[i].getName() == "Allow") allow = allHeaders[i].getValue();
-		if (allow == null) throw new Exception("Method options not supported.");
+		if (allow == null) throw new BadRequestException(404,"Method options not supported.");
 		return allow.split(",");
 	}
 
@@ -336,7 +352,7 @@ public class RestClient implements RestClientInterface
 	 * java.util.Map)
 	 */
 	@Override
-	public void patch ( URL url, Map<String, String> paramMap ) throws Exception
+	public void patch ( URL url, Map<String, String> paramMap ) throws  RestException, RuntimeRestException, URISyntaxException, ParseException
 	{
 		patch(url, paramMap, null);
 	}
@@ -349,7 +365,7 @@ public class RestClient implements RestClientInterface
 	 * java.util.Map)
 	 */
 	@Override
-	public <T> T patchEntity ( URL url, Map<String, String> paramMap, Class<T> clazz ) throws Exception
+	public <T> T patchEntity ( URL url, Map<String, String> paramMap, Class<T> clazz ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
 	{
 		return patchEntity(url, paramMap, clazz, null);
 	}
@@ -363,7 +379,7 @@ public class RestClient implements RestClientInterface
 	 */
 	@Override
 	public <T> T patchEntity ( URL url, Map<String, String> paramMap, Class<T> clazz, Map<String, String> newHeaders )
-			throws Exception
+			throws ParseException, RestException, RuntimeRestException, URISyntaxException
 	{
 		HttpPatch patch = new HttpPatch(url.toURI());
 		setupMethod(patch, newHeaders);
@@ -378,7 +394,7 @@ public class RestClient implements RestClientInterface
 	 * java.util.Map, java.util.Map)
 	 */
 	@Override
-	public void patch ( URL url, Map<String, String> paramMap, Map<String, String> newHeaders ) throws Exception
+	public void patch ( URL url, Map<String, String> paramMap, Map<String, String> newHeaders ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
 	{
 		HttpPatch patch = new HttpPatch(url.toURI());
 		setupMethod(patch, newHeaders);
@@ -393,7 +409,7 @@ public class RestClient implements RestClientInterface
 	 * @see com.cloudesire.tisana4j.RestClientInterface#post(java.net.URL, T)
 	 */
 	@Override
-	public <T> T post ( URL url, T obj ) throws Exception
+	public <T> T post ( URL url, T obj ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
 	{
 
 		return post(url, obj, null);
@@ -407,13 +423,13 @@ public class RestClient implements RestClientInterface
 	 */
 	@Override
 	@SuppressWarnings ( "unchecked" )
-	public <T> T post ( URL url, T obj, Map<String, String> newHeaders ) throws Exception
+	public <T> T post ( URL url, T obj, Map<String, String> newHeaders ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
 	{
 		return (T) post(url, obj, newHeaders, obj.getClass());
 	}
 
 	@Override
-	public <T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass ) throws Exception
+	public <T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
 	{
 		return post(url, obj, newHeaders, responseClass, null);
 	}
@@ -426,7 +442,7 @@ public class RestClient implements RestClientInterface
 	 */
 	@Override
 	public <T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass,
-			Map<String, String> responseHeaders ) throws Exception
+			Map<String, String> responseHeaders ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
 	{
 		HttpPost post = new HttpPost(url.toURI());
 		setupMethod(post, newHeaders);
@@ -450,14 +466,14 @@ public class RestClient implements RestClientInterface
 	}
 
 	@Override
-	public <T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass ) throws Exception
+	public <T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
 	{
 		return postData(url, filename, content, responseClass, null);
 	}
 
 	@Override
 	public <T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass,
-			Map<String, String> newHeaders ) throws Exception
+			Map<String, String> newHeaders ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
 	{
 		HttpPost post = new HttpPost(url.toURI());
 
@@ -483,7 +499,7 @@ public class RestClient implements RestClientInterface
 	 * @see com.cloudesire.tisana4j.RestClientInterface#put(java.net.URL, T)
 	 */
 	@Override
-	public <T> T put ( URL url, T obj ) throws Exception
+	public <T> T put ( URL url, T obj ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
 	{
 		return put(url, obj, null);
 	}
@@ -496,7 +512,7 @@ public class RestClient implements RestClientInterface
 	 */
 	@Override
 	@SuppressWarnings ( "unchecked" )
-	public <T> T put ( URL url, T obj, Map<String, String> newHeaders ) throws Exception
+	public <T> T put ( URL url, T obj, Map<String, String> newHeaders ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
 	{
 		HttpPut put = new HttpPut(url.toURI());
 		setupMethod(put, newHeaders);
@@ -558,7 +574,7 @@ public class RestClient implements RestClientInterface
 			request.addHeader(k, mergedHeaders.get(k));
 	}
 
-	private void checkError ( HttpResponse response ) throws Exception
+	private void checkError ( HttpResponse response ) throws RestException
 	{
 		int responseCode = response.getStatusLine().getStatusCode();
 		if (httpResponseHandler != null)
@@ -567,24 +583,38 @@ public class RestClient implements RestClientInterface
 		}
 		if (responseCode < 200 || responseCode >= 300)
 		{
-			if (exceptionTranslator != null)
+			try (InputStream stream = response.getEntity().getContent())
 			{
-				Exception translatedException;
-				try (InputStream stream = response.getEntity().getContent())
-				{
-					translatedException = exceptionTranslator.translateError(responseCode, response.getStatusLine()
-							.getReasonPhrase(), stream);
-				}
+				ContentType type = ContentType.getOrDefault(response.getEntity());
+				String errorStream = IOUtils.toString(stream, type.getCharset().name());
+				
+				RestException translatedException = exceptionTranslator.translateException(responseCode, response
+					.getStatusLine().getReasonPhrase(), errorStream);
+				
+				if (translatedException != null) throw translatedException;
+			} catch (IllegalStateException | IOException e)
+			{
+				throw new RestException(responseCode, e.getMessage());
+			}
 
-				if (translatedException == null) return;
-				else throw translatedException;
-			}
-			else
-			{
-				EntityUtils.consumeQuietly(response.getEntity());
-				throw new RestException(responseCode, response.getStatusLine().getReasonPhrase());
-			}
+			throw getDefaultException(responseCode, response.getStatusLine().getReasonPhrase());
 		}
+	}
+
+	private RestException getDefaultException ( int responseCode, String msgError )
+	{
+		switch (responseCode)
+		{
+		case 400:
+			return new BadRequestException(responseCode, msgError);
+		case 404:
+			return new ResourceNotFoundException(responseCode, msgError);
+		case 403:
+			return new AccessDeniedException(responseCode, msgError);
+		case 500:
+			return new InternalServerErrorException(responseCode, msgError);
+		}
+		return new RestException(responseCode, msgError);
 	}
 
 	/**
@@ -592,9 +622,15 @@ public class RestClient implements RestClientInterface
 	 * 
 	 * @param request
 	 * @return HttpResponse
+	 * @throws RestException
+	 * @throws RuntimeRestException
+	 * @throws IOException
+	 * @throws NoSuchAlgorithmException
+	 * @throws ClientProtocolException
+	 * @throws KeyManagementException
 	 * @throws Exception
 	 */
-	private HttpResponse execute ( HttpUriRequest request ) throws Exception
+	private HttpResponse execute ( HttpUriRequest request ) throws RestException, RuntimeRestException
 	{
 		log.debug(">>>> " + request.getRequestLine());
 		for (Header header : request.getAllHeaders())
@@ -602,7 +638,10 @@ public class RestClient implements RestClientInterface
 			log.trace(">>>> " + header.getName() + ": " + header.getValue());
 		}
 
-		HttpResponse response = getHttpClient().execute(request);
+		HttpResponse response;
+		try
+		{
+			response = getHttpClient().execute(request);
 
 		log.debug("<<<< " + response.getStatusLine());
 		for (Header header : response.getAllHeaders())
@@ -618,9 +657,13 @@ public class RestClient implements RestClientInterface
 
 		checkError(response);
 		return response;
+		} catch (KeyManagementException |  NoSuchAlgorithmException | IOException e)
+		{
+			throw new RuntimeRestException(e);
+		}
 	}
 
-	private synchronized HttpClient getHttpClient () throws Exception
+	private synchronized HttpClient getHttpClient () throws KeyManagementException, NoSuchAlgorithmException
 	{
 		if (httpClient == null)
 		{
@@ -674,30 +717,40 @@ public class RestClient implements RestClientInterface
 	}
 
 	@SuppressWarnings ( "unchecked" )
-	private <T> T readObject ( Class<T> clazz, HttpResponse response ) throws IOException, JsonProcessingException,
-			ParseException, JAXBException
+	private <T> T readObject ( Class<T> clazz, HttpResponse response ) throws ParseException, RuntimeRestException
 	{
-		if (!useXml)
+		if (!useXml) try (InputStream stream = response.getEntity().getContent())
 		{
-			try (InputStream stream = response.getEntity().getContent())
+			try
 			{
 				T obj = mapper.reader(clazz).readValue(stream);
 				return obj;
-			} catch (JsonParseException e)
+			} catch (JsonProcessingException e)
 			{
-				throw new ParseException("Parsing error: " + e.getOriginalMessage());
+				throw new ParseException(e);
 			}
+		} catch (IllegalStateException | IOException e1)
+		{
+			throw new RuntimeRestException(e1);
 		}
 		else
 		{
-			JAXBContext contextB = JAXBContext.newInstance(clazz);
-			Unmarshaller unmarshallerB = contextB.createUnmarshaller();
-			T obj;
 			try (InputStream stream = response.getEntity().getContent())
 			{
-				obj = (T) unmarshallerB.unmarshal(stream);
+				JAXBContext contextB = JAXBContext.newInstance(clazz);
+				Unmarshaller unmarshallerB = contextB.createUnmarshaller();
+				try
+				{
+					T obj = (T) unmarshallerB.unmarshal(stream);
+					return obj;
+				} catch (JAXBException e)
+				{
+					throw new ParseException(e);
+				}
+			} catch (IllegalStateException | IOException | JAXBException e1)
+			{
+				throw new RuntimeRestException(e1);
 			}
-			return obj;
 		}
 
 	}
@@ -714,8 +767,7 @@ public class RestClient implements RestClientInterface
 		}
 	}
 
-	private <T> void writeObject ( T obj, HttpEntityEnclosingRequest request ) throws IOException,
-			JsonGenerationException, MappingException, JsonProcessingException, ParseException, JAXBException
+	private <T> void writeObject ( T obj, HttpEntityEnclosingRequest request ) throws ParseException
 	{
 		if (!useXml)
 		{
@@ -727,22 +779,29 @@ public class RestClient implements RestClientInterface
 				StringEntity entity = new StringEntity(payload);
 				log.debug("Payload:\n " + payload);
 				request.setEntity(entity);
-			} catch (JsonMappingException e)
+			} catch ( JsonProcessingException | UnsupportedEncodingException e)
 			{
-				throw new MappingException("Error while mapping Object to Json");
+				throw new ParseException(e);
 			}
 		}
 		else
 		{
 			request.addHeader("Content-type", "application/xml");
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			JAXBContext context = JAXBContext.newInstance(obj.getClass());
+			JAXBContext context;
+			try
+			{
+				context = JAXBContext.newInstance(obj.getClass());
 			Marshaller m = context.createMarshaller();
 			m.marshal(obj, baos);
 			String payload = baos.toString();
 			StringEntity entity = new StringEntity(payload);
 			log.debug("Payload:\n " + payload);
 			request.setEntity(entity);
+			} catch (JAXBException | UnsupportedEncodingException e)
+			{
+				throw new ParseException(e);
+			}
 		}
 	}
 
