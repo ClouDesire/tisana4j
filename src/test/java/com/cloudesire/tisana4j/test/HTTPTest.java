@@ -45,44 +45,49 @@ public class HTTPTest
 			this.id = id;
 		}
 	}
+
 	public static class testExceptionTranslator implements ExceptionTranslator
 	{
 
 		@SuppressWarnings ( "unchecked" )
 		@Override
-		public RestException translateException ( int responseCode, String responseMessage,
-				String errorStream )
+		public RestException translateException ( int responseCode, String responseMessage, String errorStream )
 		{
-			if(responseCode!=500) return null;
+			if (responseCode != 500) return null;
 			ObjectMapper mapper = new ObjectMapper();
 			try
 			{
 				ErrorDto obj = mapper.reader(ErrorDto.class).readValue(errorStream);
-				return new RestException(responseCode , obj.getErrorMsg());
+				return new RestException(responseCode, obj.getError());
 			} catch (Exception e)
 			{
 				return null;
 			}
 		}
-		
+
 	}
+
 	public static class ErrorDto
 	{
-		private String errorMsg;
-		
-		public ErrorDto (String errorMsg)
+		private String error;
+
+		public ErrorDto()
 		{
-			this.errorMsg=errorMsg;
-		}
-		
-		public String getErrorMsg ()
-		{
-			return errorMsg;
 		}
 
-		public void setErrorMsg ( String errorMsg )
+		public ErrorDto(String errorMsg)
 		{
-			this.errorMsg = errorMsg;
+			this.error = errorMsg;
+		}
+
+		public String getError ()
+		{
+			return error;
+		}
+
+		public void setError ( String errorMsg )
+		{
+			this.error = errorMsg;
 		}
 
 	}
@@ -183,6 +188,9 @@ public class HTTPTest
 		} catch (Exception e)
 		{
 			if (!(e instanceof InternalServerErrorException)) fail();
+			RestException re = (RestException) e;
+			assertEquals(500,re.getResponseCode());
+			assertEquals("Internal Server Error",re.getMessage());
 		}
 	}
 	@Test
@@ -225,7 +233,8 @@ public class HTTPTest
 	public void testTranslateError () throws Exception
 	{
 		RestClient client2 = new RestClient(true);
-		
+		client2.setExceptionTranslator(new testExceptionTranslator());
+
 		try
 		{
 			client2.get(new URL(serverUrl + "/fail/500"), Resource.class);
@@ -235,7 +244,7 @@ public class HTTPTest
 			if (!(e instanceof RestException)) fail();
 			RestException re = (RestException) e;
 			assertEquals(500,re.getResponseCode());
-			assertEquals("Internal Server Error",re.getMessage());
+			assertEquals("Customized Internal Server Error",re.getMessage());
 		}
 	}
 
