@@ -27,6 +27,7 @@ import com.cloudesire.tisana4j.exceptions.BadRequestException;
 import com.cloudesire.tisana4j.exceptions.InternalServerErrorException;
 import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
 import com.cloudesire.tisana4j.exceptions.RestException;
+import com.cloudesire.tisana4j.exceptions.UnprocessableEntityException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class HTTPTest
@@ -45,14 +46,20 @@ public class HTTPTest
 			this.id = id;
 		}
 	}
-
-	public static class testExceptionTranslator implements ExceptionTranslator
+	
+	public static class TestExceptionTranslator implements ExceptionTranslator
 	{
 
 		@SuppressWarnings ( "unchecked" )
 		@Override
-		public RestException translateException ( int responseCode, String responseMessage, String errorStream )
+		public RestException translateException ( int responseCode, String responseMessage,
+				String errorStream, ResponseMessage returnMessageRef )
 		{
+			if(responseCode == 400)
+			{
+				returnMessageRef.setResponse("Customized Bad Request");
+				return null;
+			}
 			if (responseCode != 500) return null;
 			ObjectMapper mapper = new ObjectMapper();
 			try
@@ -230,10 +237,23 @@ public class HTTPTest
 		}
 	}
 	@Test
+	public void testUnprocessableEntityError () throws Exception
+	{
+		try
+		{
+			client.get(new URL(serverUrl + "/fail/422"), Resource.class);
+			fail();
+		} catch (Exception e)
+		{
+			if (!(e instanceof UnprocessableEntityException)) fail();
+		}
+	}
+	
+	@Test
 	public void testTranslateError () throws Exception
 	{
 		RestClient client2 = new RestClient(true);
-		client2.setExceptionTranslator(new testExceptionTranslator());
+		client2.setExceptionTranslator(new TestExceptionTranslator());
 
 		try
 		{
@@ -243,8 +263,26 @@ public class HTTPTest
 		{
 			if (!(e instanceof RestException)) fail();
 			RestException re = (RestException) e;
-			assertEquals(500,re.getResponseCode());
-			assertEquals("Customized Internal Server Error",re.getMessage());
+			assertEquals(500, re.getResponseCode());
+			assertEquals("Customized Internal Server Error", re.getMessage());
+		}
+	}
+
+	@Test
+	public void testTranslateError2 () throws Exception
+	{
+		RestClient client2 = new RestClient(true);
+		client2.setExceptionTranslator(new TestExceptionTranslator());
+		try
+		{
+			client2.get(new URL(serverUrl + "/fail/400"), Resource.class);
+			fail();
+		} catch (Exception e)
+		{
+			if (!(e instanceof BadRequestException)) fail();
+			BadRequestException bre = (BadRequestException) e;
+			assertEquals(400, bre.getResponseCode());
+			assertEquals("Customized Bad Request", bre.getMessage());
 		}
 	}
 

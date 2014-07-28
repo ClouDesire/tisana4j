@@ -7,7 +7,7 @@ public class DefaultExceptionTranslator implements ExceptionTranslator
 
 	@SuppressWarnings ( "unchecked" )
 	@Override
-	public RestException translateException ( int responseCode, String responseMessage, String errorStream )
+	public RestException translateException ( int responseCode, String responseMessage, String errorStream , ResponseMessage returnMessageRef)
 	{
 		return null;
 	}

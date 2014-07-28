@@ -10,17 +10,35 @@ import com.cloudesire.tisana4j.exceptions.RestException;
  */
 public interface ExceptionTranslator
 {
+	public static class ResponseMessage
+	{
+		private String response = null;
+
+		public String getResponse ()
+		{
+			return response;
+		}
+
+		public void setResponse ( String response )
+		{
+			this.response = response;
+		}
+	}
 	/**
-	 * Return the proper exception for the received response, or null to
-	 * throw the tisana default exception.
+	 * Return the proper exception for the received response, or null to throw
+	 * the tisana default exception.
 	 * 
 	 * @param responseCode
 	 *            HTTP response code
 	 * @param responseMessage
 	 *            HTTP response status phrase
-	 * @param errorStream
+	 * @param bodyMessage
 	 *            Content of the response
-	 * @return the exception to throw, or null to throw tisana default exception.
+	 * @param returnMessageRef
+	 *            if method returns null you may set a response message here
+	 * 
+	 * @return the exception to throw, or null to throw tisana default
+	 *         exception.
 	 */
-	public <T extends RestException > T  translateException ( int responseCode, String responseMessage, String errorStream );
+	public <T extends RestException > T  translateException ( int responseCode, String responseMessage, String bodyMessage, ResponseMessage returnMessageRef );
 }

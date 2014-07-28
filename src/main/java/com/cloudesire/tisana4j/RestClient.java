@@ -54,6 +54,7 @@ import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.cloudesire.tisana4j.ExceptionTranslator.ResponseMessage;
 import com.cloudesire.tisana4j.exceptions.AccessDeniedException;
 import com.cloudesire.tisana4j.exceptions.BadRequestException;
 import com.cloudesire.tisana4j.exceptions.DefaultExceptionTranslator;
@@ -62,6 +63,7 @@ import com.cloudesire.tisana4j.exceptions.ParseException;
 import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
 import com.cloudesire.tisana4j.exceptions.RestException;
 import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
+import com.cloudesire.tisana4j.exceptions.UnprocessableEntityException;
 import com.fasterxml.jackson.core.Base64Variants;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -587,31 +589,39 @@ public class RestClient implements RestClientInterface
 			{
 				ContentType type = ContentType.getOrDefault(response.getEntity());
 				String charset = type.getCharset() != null ? type.getCharset().name() : "UTF-8";
+				
 				String errorStream = IOUtils.toString(stream, charset);
-
+				
+				ResponseMessage responseMessage = new ResponseMessage();
 				RestException translatedException = exceptionTranslator.translateException(responseCode, response
-					.getStatusLine().getReasonPhrase(), errorStream);
+					.getStatusLine().getReasonPhrase(), errorStream, responseMessage);
 
 				if (translatedException != null) throw translatedException;
+			
+				throw getDefaultException(responseCode, response.getStatusLine().getReasonPhrase(), responseMessage.getResponse() );
+			
 			} catch (IllegalStateException | IOException e)
 			{
 				throw new RestException(responseCode, e.getMessage());
 			}
 
-			throw getDefaultException(responseCode, response.getStatusLine().getReasonPhrase());
 		}
 	}
 
-	private RestException getDefaultException ( int responseCode, String msgError )
+	private RestException getDefaultException ( int responseCode, String reasonPhrase, String responseMessage )
 	{
+		String msgError = responseMessage != null ? responseMessage : reasonPhrase;
+
 		switch (responseCode)
 		{
 		case 400:
 			return new BadRequestException(responseCode, msgError);
-		case 404:
-			return new ResourceNotFoundException(responseCode, msgError);
 		case 403:
 			return new AccessDeniedException(responseCode, msgError);
+		case 404:
+			return new ResourceNotFoundException(responseCode, msgError);
+		case 422:
+			return new UnprocessableEntityException(responseCode, msgError);
 		case 500:
 			return new InternalServerErrorException(responseCode, msgError);
 		}
