@@ -748,7 +748,7 @@ public class RestClient implements RestClientInterface
 		{
 			try (InputStream stream = response.getEntity().getContent())
 			{
-				JAXBContext contextB = JAXBContext.newInstance(clazz);
+				JAXBContext contextB = getJaxbContext(clazz);
 				Unmarshaller unmarshallerB = contextB.createUnmarshaller();
 				try
 				{
@@ -765,6 +765,16 @@ public class RestClient implements RestClientInterface
 		}
 
 	}
+
+	// wrap newInstance to avoid http://bugs.java.com/bugdatabase/view_bug.do?bug_id=7122142
+	private static JAXBContext getJaxbContext(Class<?> clazz) throws JAXBException
+	{
+		synchronized (jaxbGuard)
+		{
+			return JAXBContext.newInstance(clazz);
+		}
+	}
+	private final static Object jaxbGuard = new Object();
 
 	private void setupMethod ( HttpRequest request, Map<String, String> newHeaders )
 	{
