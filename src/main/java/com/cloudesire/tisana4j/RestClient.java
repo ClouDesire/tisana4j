@@ -162,7 +162,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.cloudesire.tisana4j.RestClientInterface#delete(java.net.URL)
 	 */
 	@Override
@@ -173,7 +173,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.cloudesire.tisana4j.RestClientInterface#delete(java.net.URL,
 	 * java.util.Map)
 	 */
@@ -185,13 +185,13 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.cloudesire.tisana4j.RestClientInterface#delete(java.net.URL,
 	 * java.util.Map. java.util.Map)
 	 */
 	@Override
 	public void delete ( URL url, Map<String, String> newHeaders, Map<String, String> responseHeaders ) throws URISyntaxException, RestException, RuntimeRestException
-			
+
 	{
 		HttpDelete delete = new HttpDelete(url.toURI());
 		setupMethod(delete, newHeaders);
@@ -207,7 +207,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.cloudesire.tisana4j.RestClientInterface#get(java.net.URL,
 	 * java.lang.Class)
 	 */
@@ -219,7 +219,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.cloudesire.tisana4j.RestClientInterface#get(java.net.URL,
 	 * java.lang.Class, java.util.Map)
 	 */
@@ -234,7 +234,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * com.cloudesire.tisana4j.RestClientInterface#getCollection(java.net.URL,
 	 * java.lang.Class)
@@ -248,7 +248,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * com.cloudesire.tisana4j.RestClientInterface#getCollection(java.net.URL,
 	 * java.lang.Class, java.util.Map)
@@ -284,7 +284,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.cloudesire.tisana4j.RestClientInterface#head(java.net.URL)
 	 */
 	@Override
@@ -295,7 +295,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.cloudesire.tisana4j.RestClientInterface#head(java.net.URL,
 	 * java.util.Map)
 	 */
@@ -317,7 +317,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.cloudesire.tisana4j.RestClientInterface#options(java.net.URL)
 	 */
 	@Override
@@ -328,7 +328,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.cloudesire.tisana4j.RestClientInterface#options(java.net.URL,
 	 * java.util.Map)
 	 */
@@ -349,7 +349,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.cloudesire.tisana4j.RestClientInterface#patch(java.net.URL,
 	 * java.util.Map)
 	 */
@@ -361,7 +361,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * com.cloudesire.tisana4j.RestClientInterface#patchEntity(java.net.URL,
 	 * java.util.Map)
@@ -374,7 +374,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * com.cloudesire.tisana4j.RestClientInterface#patchEntity(java.net.URL,
 	 * java.util.Map)
@@ -391,7 +391,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.cloudesire.tisana4j.RestClientInterface#patch(java.net.URL,
 	 * java.util.Map, java.util.Map)
 	 */
@@ -407,7 +407,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.cloudesire.tisana4j.RestClientInterface#post(java.net.URL, T)
 	 */
 	@Override
@@ -419,7 +419,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.cloudesire.tisana4j.RestClientInterface#post(java.net.URL, T,
 	 * java.util.Map)
 	 */
@@ -438,7 +438,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.cloudesire.tisana4j.RestClientInterface#post(java.net.URL, T,
 	 * java.util.Map, java.lang.Class)
 	 */
@@ -497,7 +497,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.cloudesire.tisana4j.RestClientInterface#put(java.net.URL, T)
 	 */
 	@Override
@@ -508,7 +508,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.cloudesire.tisana4j.RestClientInterface#put(java.net.URL, T,
 	 * java.util.Map)
 	 */
@@ -526,7 +526,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * com.cloudesire.tisana4j.RestClientInterface#setExceptionTranslator(com
 	 * .cloudesire.tisana4j.ExceptionTranslator)
@@ -539,7 +539,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see
 	 * com.cloudesire.tisana4j.RestClientInterface#setHeaders(java.util.Map)
 	 */
@@ -557,7 +557,7 @@ public class RestClient implements RestClientInterface
 
 	/*
 	 * (non-Javadoc)
-	 * 
+	 *
 	 * @see com.cloudesire.tisana4j.RestClientInterface#setUseXml(boolean)
 	 */
 	@Override
@@ -589,17 +589,17 @@ public class RestClient implements RestClientInterface
 			{
 				ContentType type = ContentType.getOrDefault(response.getEntity());
 				String charset = type.getCharset() != null ? type.getCharset().name() : "UTF-8";
-				
+
 				String errorStream = IOUtils.toString(stream, charset);
-				
+
 				ResponseMessage responseMessage = new ResponseMessage();
 				RestException translatedException = exceptionTranslator.translateException(responseCode, response
 					.getStatusLine().getReasonPhrase(), errorStream, responseMessage);
 
 				if (translatedException != null) throw translatedException;
-			
+
 				throw getDefaultException(responseCode, response.getStatusLine().getReasonPhrase(), responseMessage.getResponse() );
-			
+
 			} catch (IllegalStateException | IOException e)
 			{
 				throw new RestException(responseCode, e.getMessage());
@@ -630,7 +630,7 @@ public class RestClient implements RestClientInterface
 
 	/**
 	 * Internal execute, log headers, check for errors
-	 * 
+	 *
 	 * @param request
 	 * @return HttpResponse
 	 * @throws RestException
