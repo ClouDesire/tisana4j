@@ -288,7 +288,7 @@ public class RestClient implements RestClientInterface
 	 * @see com.cloudesire.tisana4j.RestClientInterface#head(java.net.URL)
 	 */
 	@Override
-	public Map<String, String> head ( URL url ) throws Exception
+	public Map<String, String> head ( URL url ) throws ParseException, RuntimeRestException, RestException, URISyntaxException
 	{
 		return head(url, null);
 	}
@@ -321,7 +321,7 @@ public class RestClient implements RestClientInterface
 	 * @see com.cloudesire.tisana4j.RestClientInterface#options(java.net.URL)
 	 */
 	@Override
-	public String[] options ( URL url ) throws Exception
+	public String[] options ( URL url ) throws ParseException, RuntimeRestException, RestException, URISyntaxException
 	{
 		return options(url, null);
 	}
@@ -727,10 +727,18 @@ public class RestClient implements RestClientInterface
 		return ctx;
 	}
 
-	@SuppressWarnings ( "unchecked" )
 	private <T> T readObject ( Class<T> clazz, HttpResponse response ) throws ParseException, RuntimeRestException
 	{
-		if (!useXml) try (InputStream stream = response.getEntity().getContent())
+		if (useXml)
+		{
+			return parseXml(clazz, response);
+		}
+		return parseJson(clazz, response);
+	}
+
+	private <T> T parseJson ( Class<T> clazz, HttpResponse response ) throws ParseException, RuntimeRestException
+	{
+		try (InputStream stream = response.getEntity().getContent())
 		{
 			try
 			{
@@ -744,26 +752,27 @@ public class RestClient implements RestClientInterface
 		{
 			throw new RuntimeRestException(e1);
 		}
-		else
-		{
-			try (InputStream stream = response.getEntity().getContent())
-			{
-				JAXBContext contextB = getJaxbContext(clazz);
-				Unmarshaller unmarshallerB = contextB.createUnmarshaller();
-				try
-				{
-					T obj = (T) unmarshallerB.unmarshal(stream);
-					return obj;
-				} catch (JAXBException e)
-				{
-					throw new ParseException(e);
-				}
-			} catch (IllegalStateException | IOException | JAXBException e1)
-			{
-				throw new RuntimeRestException(e1);
-			}
-		}
+	}
 
+	@SuppressWarnings ( "unchecked" )
+	private <T> T parseXml ( Class<T> clazz, HttpResponse response ) throws ParseException, RuntimeRestException
+	{
+		try (InputStream stream = response.getEntity().getContent())
+		{
+			JAXBContext contextB = getJaxbContext(clazz);
+			Unmarshaller unmarshallerB = contextB.createUnmarshaller();
+			try
+			{
+				T obj = (T) unmarshallerB.unmarshal(stream);
+				return obj;
+			} catch (JAXBException e)
+			{
+				throw new ParseException(e);
+			}
+		} catch (IllegalStateException | IOException | JAXBException e1)
+		{
+			throw new RuntimeRestException(e1);
+		}
 	}
 
 	// wrap newInstance to avoid http://bugs.java.com/bugdatabase/view_bug.do?bug_id=7122142

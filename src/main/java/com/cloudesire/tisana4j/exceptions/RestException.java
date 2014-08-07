@@ -12,6 +12,12 @@ public class RestException extends Exception
 		this.responseCode = responseCode;
 	}
 
+	public RestException(Exception e)
+	{
+		super(e);
+		this.responseCode = null;
+	}
+
 	public int getResponseCode ()
 	{
 		return responseCode;
