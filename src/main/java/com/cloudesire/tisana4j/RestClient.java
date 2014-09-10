@@ -57,6 +57,7 @@ import org.slf4j.LoggerFactory;
 import com.cloudesire.tisana4j.ExceptionTranslator.ResponseMessage;
 import com.cloudesire.tisana4j.exceptions.AccessDeniedException;
 import com.cloudesire.tisana4j.exceptions.BadRequestException;
+import com.cloudesire.tisana4j.exceptions.ConflictException;
 import com.cloudesire.tisana4j.exceptions.DefaultExceptionTranslator;
 import com.cloudesire.tisana4j.exceptions.InternalServerErrorException;
 import com.cloudesire.tisana4j.exceptions.ParseException;
@@ -614,16 +615,18 @@ public class RestClient implements RestClientInterface
 
 		switch (responseCode)
 		{
-		case 400:
-			return new BadRequestException(responseCode, msgError);
-		case 403:
-			return new AccessDeniedException(responseCode, msgError);
-		case 404:
-			return new ResourceNotFoundException(responseCode, msgError);
-		case 422:
-			return new UnprocessableEntityException(responseCode, msgError);
-		case 500:
-			return new InternalServerErrorException(responseCode, msgError);
+			case 400:
+				return new BadRequestException(responseCode, msgError);
+			case 403:
+				return new AccessDeniedException(responseCode, msgError);
+			case 404:
+				return new ResourceNotFoundException(responseCode, msgError);
+			case 409:
+				return new ConflictException(responseCode, msgError);
+			case 422:
+				return new UnprocessableEntityException(responseCode, msgError);
+			case 500:
+				return new InternalServerErrorException(responseCode, msgError);
 		}
 		return new RestException(responseCode, msgError);
 	}
