@@ -64,6 +64,7 @@ import com.cloudesire.tisana4j.exceptions.ParseException;
 import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
 import com.cloudesire.tisana4j.exceptions.RestException;
 import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
+import com.cloudesire.tisana4j.exceptions.UnauthorizedException;
 import com.cloudesire.tisana4j.exceptions.UnprocessableEntityException;
 import com.fasterxml.jackson.core.Base64Variants;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -617,6 +618,8 @@ public class RestClient implements RestClientInterface
 		{
 			case 400:
 				return new BadRequestException(responseCode, msgError);
+			case 401:
+				return new UnauthorizedException(responseCode, msgError);
 			case 403:
 				return new AccessDeniedException(responseCode, msgError);
 			case 404:
