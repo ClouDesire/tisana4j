@@ -841,4 +841,13 @@ public class RestClient implements RestClientInterface
 		}
 	}
 
+	@Override
+	public InputStream getData ( URL url, Map<String, String> newHeaders ) throws URISyntaxException, RuntimeRestException, RestException, IllegalStateException, IOException
+	{
+		log.debug("Sending GET to " + url + " to retrieve CSV file");
+		HttpGet get = new HttpGet(url.toURI());
+		setupMethod(get, newHeaders);
+		HttpResponse response = execute(get);
+		return response.getEntity().getContent();
+	}
 }

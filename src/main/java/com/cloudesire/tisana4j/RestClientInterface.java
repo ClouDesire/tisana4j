@@ -1,5 +1,6 @@
 package com.cloudesire.tisana4j;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -7,10 +8,10 @@ import java.util.List;
 import java.util.Map;
 
 import com.cloudesire.tisana4j.exceptions.RestException;
+import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
 
 public interface RestClientInterface
 {
-
 	void delete ( URL url ) throws RestException, URISyntaxException;
 
 	void delete ( URL url, Map<String, String> newHeaders ) throws RestException, URISyntaxException;
@@ -20,6 +21,8 @@ public interface RestClientInterface
 	<T> T get ( URL url, Class<T> clazz ) throws RestException, URISyntaxException;
 
 	<T> T get ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws RestException, URISyntaxException;
+
+	InputStream getData ( URL url, Map<String, String> newHeaders ) throws URISyntaxException, RuntimeRestException, RestException, IllegalStateException, IOException;
 
 	<T> List<T> getCollection ( URL url, Class<T> clazz ) throws RestException, URISyntaxException;
 

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.InputStream;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +47,7 @@ public class HTTPTest
 			this.id = id;
 		}
 	}
-	
+
 	public static class TestExceptionTranslator implements ExceptionTranslator
 	{
 
@@ -103,6 +104,7 @@ public class HTTPTest
 	private String serverUrl;
 	private final static Logger log = LoggerFactory.getLogger(HTTPTest.class);
 
+	private final HttpRequestHandler csvHttpRequest = new GetCsvHttpRequestHandler();
 	private final HttpRequestHandler deleteHandler = new DeleteHttpRequestHandler();
 	private final HttpRequestHandler getHandler = new GetHttpRequestHandler();
 	private final HttpRequestHandler getCollectionHandler = new GetCollectionHttpRequestHandler();
@@ -110,7 +112,7 @@ public class HTTPTest
 	private final HttpRequestHandler putHandler = new PutHttpRequestHandler();
 	private final HttpRequestHandler patchHandler = new PatchHttpRequestHandler();
 	private final HttpRequestHandler serverErrorHandler = new ServerErrorHandler();
-	RestClient client = new RestClient(true);
+	private final RestClient client = new RestClient(true);
 
 	@Before
 	public void setUp () throws Exception
@@ -121,6 +123,7 @@ public class HTTPTest
 		server.register("/resources/*", getCollectionHandler);
 		server.register("/create/*", postHandler);
 		server.register("/update/*", putHandler);
+		server.register("/get/csv", csvHttpRequest);
 		server.register("/patch/*", patchHandler);
 		server.register("/fail/*", serverErrorHandler);
 		server.start();
@@ -128,6 +131,15 @@ public class HTTPTest
 		// report how to access the server
 		serverUrl = "http://" + server.getServiceAddress().getHostName() + ":" + server.getServiceAddress().getPort();
 		log.info("LocalTestServer available at " + serverUrl);
+	}
+
+	@Test
+	public void testGetData() throws Exception
+	{
+		InputStream stream = client.getData(new URL(serverUrl+"/get/csv"), null);
+		byte[] b = new byte[1024];
+		int r = stream.read(b);
+		assertTrue(r > 0 );
 	}
 
 	@Test
@@ -248,7 +260,7 @@ public class HTTPTest
 			if (!(e instanceof UnprocessableEntityException)) fail();
 		}
 	}
-	
+
 	@Test
 	public void testTranslateError () throws Exception
 	{
