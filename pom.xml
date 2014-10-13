@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.cloudesire</groupId>
 	<artifactId>tisana4j</artifactId>
-	<version>0.0.15-SNAPSHOT</version>
+	<version>0.0.16-SNAPSHOT</version>
 	<name>tisana4j</name>
 	<description>Yet another (but missing) simple RESTful client library for Java.</description>
 	<url>https://github.com/ClouDesire/tisana4j</url>
@@ -26,6 +26,12 @@
 		<developer>
 			<name>Paolo Magnani</name>
 			<email>paolo.magnani@cloudesire.com</email>
+			<organization>ClouDesire</organization>
+			<organizationUrl>http://www.cloudesire.com</organizationUrl>
+		</developer>
+		<developer>
+			<name>Tazio Ceri</name>
+			<email>tazio.ceri@cloudesire.com</email>
 			<organization>ClouDesire</organization>
 			<organizationUrl>http://www.cloudesire.com</organizationUrl>
 		</developer>
