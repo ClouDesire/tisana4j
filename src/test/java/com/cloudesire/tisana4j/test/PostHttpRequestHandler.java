@@ -11,7 +11,6 @@ import com.cloudesire.tisana4j.test.HTTPTest.Resource;
 
 public class PostHttpRequestHandler extends BaseHttpRequestHandler
 {
-
 	@Override
 	public void handle ( HttpRequest request, HttpResponse response, HttpContext context ) throws HttpException,
 			IOException
@@ -26,7 +25,5 @@ public class PostHttpRequestHandler extends BaseHttpRequestHandler
 		{
 			response.setStatusCode(500);
 		}
-
 	}
-
 }

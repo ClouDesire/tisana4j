@@ -140,6 +140,9 @@ public class HTTPTest
 		byte[] b = new byte[1024];
 		int r = stream.read(b);
 		assertTrue(r > 0 );
+		String out = new String(b);
+		String[] lines = out.split("\r\n");
+		assertEquals(4,lines.length);
 	}
 
 	@Test
