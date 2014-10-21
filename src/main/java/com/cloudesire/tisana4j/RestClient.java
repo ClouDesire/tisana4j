@@ -1,29 +1,21 @@
 package com.cloudesire.tisana4j;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-
+import com.cloudesire.tisana4j.ExceptionTranslator.ResponseMessage;
+import com.cloudesire.tisana4j.exceptions.AccessDeniedException;
+import com.cloudesire.tisana4j.exceptions.BadRequestException;
+import com.cloudesire.tisana4j.exceptions.ConflictException;
+import com.cloudesire.tisana4j.exceptions.DefaultExceptionTranslator;
+import com.cloudesire.tisana4j.exceptions.InternalServerErrorException;
+import com.cloudesire.tisana4j.exceptions.ParseException;
+import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
+import com.cloudesire.tisana4j.exceptions.RestException;
+import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
+import com.cloudesire.tisana4j.exceptions.UnauthorizedException;
+import com.cloudesire.tisana4j.exceptions.UnprocessableEntityException;
+import com.fasterxml.jackson.core.Base64Variants;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
@@ -31,6 +23,7 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
@@ -48,28 +41,35 @@ import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.params.CoreConnectionPNames;
 import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cloudesire.tisana4j.ExceptionTranslator.ResponseMessage;
-import com.cloudesire.tisana4j.exceptions.AccessDeniedException;
-import com.cloudesire.tisana4j.exceptions.BadRequestException;
-import com.cloudesire.tisana4j.exceptions.ConflictException;
-import com.cloudesire.tisana4j.exceptions.DefaultExceptionTranslator;
-import com.cloudesire.tisana4j.exceptions.InternalServerErrorException;
-import com.cloudesire.tisana4j.exceptions.ParseException;
-import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
-import com.cloudesire.tisana4j.exceptions.RestException;
-import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
-import com.cloudesire.tisana4j.exceptions.UnauthorizedException;
-import com.cloudesire.tisana4j.exceptions.UnprocessableEntityException;
-import com.fasterxml.jackson.core.Base64Variants;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class RestClient implements RestClientInterface
 {
@@ -497,11 +497,27 @@ public class RestClient implements RestClientInterface
 		return readObject(responseClass, response);
 	}
 
+	@Override
+	public <T> T postFormData ( URL url, List<BasicNameValuePair> formData, Class<T> responseClass ) throws RestException, URISyntaxException, UnsupportedEncodingException
+	{
+		HttpPost post = new HttpPost(url.toURI());
+		setupMethod(post, null);
+		UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formData, "UTF-8");
+		post.setEntity(entity);
+		HttpResponse response = execute(post);
+		if (responseClass == null || response.getEntity() == null)
+		{
+			EntityUtils.consumeQuietly(response.getEntity());
+			return null;
+		}
+		return readObject(responseClass, response);
+	}
+
 	/*
-	 * (non-Javadoc)
-	 *
-	 * @see com.cloudesire.tisana4j.RestClientInterface#put(java.net.URL, T)
-	 */
+		 * (non-Javadoc)
+		 *
+		 * @see com.cloudesire.tisana4j.RestClientInterface#put(java.net.URL, T)
+		 */
 	@Override
 	public <T> T put ( URL url, T obj ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
 	{
