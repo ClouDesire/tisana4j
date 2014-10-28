@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.lang.Override;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyManagementException;
@@ -76,7 +77,7 @@ public class RestClient implements RestClientInterface
 	private final String username;
 	private final String password;
 	private SSLContext ctx;
-	private final boolean authenticated;
+	private boolean authenticated;
 	private boolean useXml = false;
 	private ExceptionTranslator exceptionTranslator = new DefaultExceptionTranslator();
 	private HttpResponseHandler httpResponseHandler;
@@ -85,6 +86,18 @@ public class RestClient implements RestClientInterface
 	private Map<String, String> headers;
 	private HttpClient httpClient;
 	private static Logger log = LoggerFactory.getLogger(RestClient.class);
+
+	@Override
+	public void toggleAuthentication()
+	{
+		authenticated = !authenticated;
+	}
+
+	@Override
+	public String getUsername()
+	{
+		return username;
+	}
 
 	/**
 	 * Default settings: no authentication and verify if server certificate is

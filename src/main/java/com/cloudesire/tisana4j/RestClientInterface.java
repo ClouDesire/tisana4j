@@ -79,4 +79,7 @@ public interface RestClientInterface
 	 */
 	void setUseXml ( boolean useXml );
 
+	void toggleAuthentication();
+
+	String getUsername();
 }
