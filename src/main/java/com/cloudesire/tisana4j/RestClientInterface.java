@@ -1,14 +1,16 @@
 package com.cloudesire.tisana4j;
 
+import com.cloudesire.tisana4j.exceptions.RestException;
+import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
+import org.apache.http.message.BasicNameValuePair;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
-
-import com.cloudesire.tisana4j.exceptions.RestException;
-import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
 
 public interface RestClientInterface
 {
@@ -56,6 +58,8 @@ public interface RestClientInterface
 
 	<T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass,
 			Map<String, String> newHeaders ) throws RestException, URISyntaxException;
+
+	<T> T postFormData ( URL url, List<BasicNameValuePair> formData, Class<T> responseClass) throws RestException, URISyntaxException, UnsupportedEncodingException;
 
 	<T> T put ( URL url, T obj ) throws RestException, URISyntaxException;
 
