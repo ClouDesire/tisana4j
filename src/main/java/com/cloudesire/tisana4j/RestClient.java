@@ -583,6 +583,12 @@ public class RestClient implements RestClientInterface
 	}
 
 	@Override
+	public Map<String, String> getHeaders()
+	{
+		return this.headers;
+	}
+
+	@Override
 	public void setHttpResponseHandler ( HttpResponseHandler httpResponseHandler )
 	{
 		this.httpResponseHandler = httpResponseHandler;

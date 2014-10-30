@@ -77,6 +77,8 @@ public interface RestClientInterface
 
 	void setHeaders ( Map<String, String> headers );
 
+	Map<String, String> getHeaders();
+
 	/**
 	 * @param useXml
 	 *            if true client uses xml instead of json.
