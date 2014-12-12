@@ -1,36 +1,10 @@
 package com.cloudesire.tisana4j;
 
-import com.cloudesire.tisana4j.exceptions.DefaultExceptionTranslator;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.lang.Override;
-import java.net.URISyntaxException;
-import java.net.URL;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-
 import com.cloudesire.tisana4j.ExceptionTranslator.ResponseMessage;
 import com.cloudesire.tisana4j.exceptions.AccessDeniedException;
 import com.cloudesire.tisana4j.exceptions.BadRequestException;
 import com.cloudesire.tisana4j.exceptions.ConflictException;
+import com.cloudesire.tisana4j.exceptions.DefaultExceptionTranslator;
 import com.cloudesire.tisana4j.exceptions.InternalServerErrorException;
 import com.cloudesire.tisana4j.exceptions.ParseException;
 import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
@@ -59,7 +33,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -73,6 +46,29 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URISyntaxException;
+import java.net.URL;
+import java.security.KeyManagementException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class RestClient implements RestClientInterface
 {
@@ -727,10 +723,15 @@ public class RestClient implements RestClientInterface
 			HttpParams params = httpClient.getParams();
 			params.setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 60000);
 			params.setIntParameter(CoreConnectionPNames.SO_TIMEOUT, 60000);
-			if (skipValidation)
+			if (this.skipValidation || this.ctx != null)
 			{
-				log.warn("Configuring HTTPS with no validation!");
-				SSLSocketFactory sf = new SSLSocketFactory(getSSLContext(), new AllowAllHostnameVerifier());
+				SSLSocketFactory sf = new SSLSocketFactory(getSSLContext());
+				if (this.skipValidation)
+				{
+					log.warn("Configuring HTTPS with no validation!");
+					sf.setHostnameVerifier(SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+				}
+
 				Scheme https = new Scheme("https", 443, sf);
 				httpClient.getConnectionManager().getSchemeRegistry().register(https);
 			}
