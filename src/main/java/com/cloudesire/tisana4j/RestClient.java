@@ -1,5 +1,6 @@
 package com.cloudesire.tisana4j;
 
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -41,7 +42,6 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.ssl.AllowAllHostnameVerifier;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -791,10 +791,15 @@ public class RestClient implements RestClientInterface
 			HttpParams params = httpClient.getParams();
 			params.setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 60000);
 			params.setIntParameter(CoreConnectionPNames.SO_TIMEOUT, 60000);
-			if (skipValidation)
+			if (this.skipValidation || this.ctx != null)
 			{
-				log.warn("Configuring HTTPS with no validation!");
-				SSLSocketFactory sf = new SSLSocketFactory(getSSLContext(), new AllowAllHostnameVerifier());
+				SSLSocketFactory sf;
+				if (this.skipValidation)
+				{
+					log.warn("Configuring HTTPS with no validation!");
+					sf = new SSLSocketFactory(getSSLContext(), SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+				} else sf =   new SSLSocketFactory(getSSLContext());
+
 				Scheme https = new Scheme("https", 443, sf);
 				httpClient.getConnectionManager().getSchemeRegistry().register(https);
 			}
