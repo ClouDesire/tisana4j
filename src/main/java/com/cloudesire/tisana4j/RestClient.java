@@ -1,12 +1,9 @@
 package com.cloudesire.tisana4j;
 
-import com.cloudesire.tisana4j.exceptions.DefaultExceptionTranslator;
-
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.lang.Override;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyManagementException;
@@ -27,21 +24,6 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 
-import com.cloudesire.tisana4j.ExceptionTranslator.ResponseMessage;
-import com.cloudesire.tisana4j.exceptions.AccessDeniedException;
-import com.cloudesire.tisana4j.exceptions.BadRequestException;
-import com.cloudesire.tisana4j.exceptions.ConflictException;
-import com.cloudesire.tisana4j.exceptions.InternalServerErrorException;
-import com.cloudesire.tisana4j.exceptions.ParseException;
-import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
-import com.cloudesire.tisana4j.exceptions.RestException;
-import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
-import com.cloudesire.tisana4j.exceptions.UnauthorizedException;
-import com.cloudesire.tisana4j.exceptions.UnprocessableEntityException;
-import com.fasterxml.jackson.core.Base64Variants;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
@@ -73,6 +55,23 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.cloudesire.tisana4j.ExceptionTranslator.ResponseMessage;
+import com.cloudesire.tisana4j.exceptions.AccessDeniedException;
+import com.cloudesire.tisana4j.exceptions.BadRequestException;
+import com.cloudesire.tisana4j.exceptions.ConflictException;
+import com.cloudesire.tisana4j.exceptions.DefaultExceptionTranslator;
+import com.cloudesire.tisana4j.exceptions.InternalServerErrorException;
+import com.cloudesire.tisana4j.exceptions.ParseException;
+import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
+import com.cloudesire.tisana4j.exceptions.RestException;
+import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
+import com.cloudesire.tisana4j.exceptions.UnauthorizedException;
+import com.cloudesire.tisana4j.exceptions.UnprocessableEntityException;
+import com.fasterxml.jackson.core.Base64Variants;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 public class RestClient implements RestClientInterface
 {
@@ -165,8 +164,7 @@ public class RestClient implements RestClientInterface
 	 * @param ctx
 	 *            ssl context
 	 */
-	public RestClient(String username, String password, boolean skipValidation, Map<String, String> headers,
-			SSLContext ctx)
+	public RestClient(String username, String password, boolean skipValidation, Map<String, String> headers, SSLContext ctx)
 	{
 		super();
 		this.username = username;
@@ -183,7 +181,7 @@ public class RestClient implements RestClientInterface
 	 * @see com.cloudesire.tisana4j.RestClientInterface#delete(java.net.URL)
 	 */
 	@Override
-	public void delete ( URL url ) throws URISyntaxException, RestException, RuntimeRestException
+	public void delete ( URL url ) throws RestException, RuntimeRestException
 	{
 		delete(url, null);
 	}
@@ -195,7 +193,7 @@ public class RestClient implements RestClientInterface
 	 * java.util.Map)
 	 */
 	@Override
-	public void delete ( URL url, Map<String, String> newHeaders ) throws URISyntaxException, RestException, RuntimeRestException
+	public void delete ( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
 	{
 		delete(url, newHeaders, null);
 	}
@@ -207,10 +205,17 @@ public class RestClient implements RestClientInterface
 	 * java.util.Map. java.util.Map)
 	 */
 	@Override
-	public void delete ( URL url, Map<String, String> newHeaders, Map<String, String> responseHeaders ) throws URISyntaxException, RestException, RuntimeRestException
+	public void delete ( URL url, Map<String, String> newHeaders, Map<String, String> responseHeaders ) throws RestException, RuntimeRestException
 
 	{
-		HttpDelete delete = new HttpDelete(url.toURI());
+		HttpDelete delete;
+		try
+		{
+			delete = new HttpDelete(url.toURI());
+		} catch (URISyntaxException e)
+		{
+			throw new RuntimeRestException(e);
+		}
 		setupMethod(delete, newHeaders);
 		HttpResponse response = execute(delete);
 		if (responseHeaders != null && response.getAllHeaders().length != 0)
@@ -229,7 +234,7 @@ public class RestClient implements RestClientInterface
 	 * java.lang.Class)
 	 */
 	@Override
-	public <T> T get ( URL url, Class<T> clazz ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
+	public <T> T get ( URL url, Class<T> clazz ) throws RestException, RuntimeRestException
 	{
 		return get(url, clazz, null);
 	}
@@ -241,12 +246,19 @@ public class RestClient implements RestClientInterface
 	 * java.lang.Class, java.util.Map)
 	 */
 	@Override
-	public <T> T get ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws URISyntaxException, ParseException, RuntimeRestException, RestException
+	public <T> T get ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws RuntimeRestException,
+			RestException
 	{
 		log.debug("Sending GET to " + url);
-		HttpGet get = new HttpGet(url.toURI());
-		setupMethod(get, newHeaders);
-		return readObject(clazz, execute(get));
+		try
+		{
+			HttpGet get = new HttpGet(url.toURI());
+			setupMethod(get, newHeaders);
+			return readObject(clazz, execute(get));
+		} catch (URISyntaxException | ParseException e)
+		{
+			throw new RuntimeRestException(e);
+		}
 	}
 
 	/*
@@ -257,7 +269,7 @@ public class RestClient implements RestClientInterface
 	 * java.lang.Class)
 	 */
 	@Override
-	public <T> List<T> getCollection ( URL url, Class<T> clazz ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
+	public <T> List<T> getCollection ( URL url, Class<T> clazz ) throws RestException, RuntimeRestException
 	{
 		return getCollection(url, clazz, null);
 
@@ -271,23 +283,20 @@ public class RestClient implements RestClientInterface
 	 * java.lang.Class, java.util.Map)
 	 */
 	@Override
-	public <T> List<T> getCollection ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
+	public <T> List<T> getCollection ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
 	{
-		HttpGet get = new HttpGet(url.toURI());
-		setupMethod(get, newHeaders);
-		HttpResponse response = execute(get);
-		try (InputStream stream = response.getEntity().getContent())
+		try
 		{
-			try
+			HttpGet get = new HttpGet(url.toURI());
+			setupMethod(get, newHeaders);
+			HttpResponse response = execute(get);
+			try (InputStream stream = response.getEntity().getContent())
 			{
-				List<T> objList = mapper.reader(mapper.getTypeFactory().constructCollectionType(List.class, clazz))
-						.readValue(stream);
+			
+				List<T> objList = mapper.reader(mapper.getTypeFactory().constructCollectionType(List.class, clazz)).readValue(stream);
 				return objList;
-			} catch (JsonProcessingException  e)
-			{
-				throw new ParseException(e);
-			}
-		} catch ( IOException e)
+			} 
+		} catch ( IOException | URISyntaxException e)
 		{
 			throw new RuntimeRestException(e);
 		}
@@ -305,7 +314,7 @@ public class RestClient implements RestClientInterface
 	 * @see com.cloudesire.tisana4j.RestClientInterface#head(java.net.URL)
 	 */
 	@Override
-	public Map<String, String> head ( URL url ) throws ParseException, RuntimeRestException, RestException, URISyntaxException
+	public Map<String, String> head ( URL url ) throws RuntimeRestException, RestException
 	{
 		return head(url, null);
 	}
@@ -317,19 +326,25 @@ public class RestClient implements RestClientInterface
 	 * java.util.Map)
 	 */
 	@Override
-	public Map<String, String> head ( URL url, Map<String, String> newHeaders ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
+	public Map<String, String> head ( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
 	{
-		HttpHead head = new HttpHead(url.toURI());
-		setupMethod(head, newHeaders);
-		HttpResponse response = execute(head);
-		EntityUtils.consumeQuietly(response.getEntity());
+		try
+		{
+			HttpHead head = new HttpHead(url.toURI());
+			setupMethod(head, newHeaders);
+			HttpResponse response = execute(head);
+			EntityUtils.consumeQuietly(response.getEntity());
 
-		Map<String, String> headers = new HashMap<>();
-		Header[] allHeaders = response.getAllHeaders();
-		if (allHeaders == null) return headers;
-		for (int i = 0; i < allHeaders.length; i++)
-			headers.put(allHeaders[i].getName(), allHeaders[i].getValue());
-		return headers;
+			Map<String, String> headers = new HashMap<>();
+			Header[] allHeaders = response.getAllHeaders();
+			if (allHeaders == null) return headers;
+			for (int i = 0; i < allHeaders.length; i++)
+				headers.put(allHeaders[i].getName(), allHeaders[i].getValue());
+			return headers;
+		} catch (URISyntaxException e)
+		{
+			throw new RuntimeRestException(e);
+		}
 	}
 
 	/*
@@ -338,7 +353,7 @@ public class RestClient implements RestClientInterface
 	 * @see com.cloudesire.tisana4j.RestClientInterface#options(java.net.URL)
 	 */
 	@Override
-	public String[] options ( URL url ) throws ParseException, RuntimeRestException, RestException, URISyntaxException
+	public String[] options ( URL url ) throws RuntimeRestException, RestException
 	{
 		return options(url, null);
 	}
@@ -350,9 +365,16 @@ public class RestClient implements RestClientInterface
 	 * java.util.Map)
 	 */
 	@Override
-	public String[] options ( URL url, Map<String, String> newHeaders ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
+	public String[] options ( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
 	{
-		HttpOptions options = new HttpOptions(url.toURI());
+		HttpOptions options;
+		try
+		{
+			options = new HttpOptions(url.toURI());
+		} catch (URISyntaxException e)
+		{
+			throw new RuntimeRestException(e);
+		}
 		setupMethod(options, newHeaders);
 		HttpResponse response = execute(options);
 		EntityUtils.consumeQuietly(response.getEntity());
@@ -371,7 +393,7 @@ public class RestClient implements RestClientInterface
 	 * java.util.Map)
 	 */
 	@Override
-	public void patch ( URL url, Map<String, String> paramMap ) throws  RestException, RuntimeRestException, URISyntaxException, ParseException
+	public void patch ( URL url, Map<String, String> paramMap ) throws  RestException, RuntimeRestException
 	{
 		patch(url, paramMap, null);
 	}
@@ -384,7 +406,7 @@ public class RestClient implements RestClientInterface
 	 * java.util.Map)
 	 */
 	@Override
-	public <T> T patchEntity ( URL url, Map<String, String> paramMap, Class<T> clazz ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
+	public <T> T patchEntity ( URL url, Map<String, String> paramMap, Class<T> clazz ) throws RestException, RuntimeRestException
 	{
 		return patchEntity(url, paramMap, clazz, null);
 	}
@@ -398,12 +420,19 @@ public class RestClient implements RestClientInterface
 	 */
 	@Override
 	public <T> T patchEntity ( URL url, Map<String, String> paramMap, Class<T> clazz, Map<String, String> newHeaders )
-			throws ParseException, RestException, RuntimeRestException, URISyntaxException
+			throws RestException, RuntimeRestException
 	{
-		HttpPatch patch = new HttpPatch(url.toURI());
-		setupMethod(patch, newHeaders);
-		writeObject(paramMap, patch);
-		return readObject(clazz, execute(patch));
+		try
+		{
+			HttpPatch patch = new HttpPatch(url.toURI());
+
+			setupMethod(patch, newHeaders);
+			writeObject(paramMap, patch);
+			return readObject(clazz, execute(patch));
+		} catch (URISyntaxException | ParseException e)
+		{
+			throw new RuntimeRestException(e);
+		}
 	}
 
 	/*
@@ -413,13 +442,21 @@ public class RestClient implements RestClientInterface
 	 * java.util.Map, java.util.Map)
 	 */
 	@Override
-	public void patch ( URL url, Map<String, String> paramMap, Map<String, String> newHeaders ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
+	public void patch ( URL url, Map<String, String> paramMap, Map<String, String> newHeaders ) throws RestException,
+			RuntimeRestException
 	{
-		HttpPatch patch = new HttpPatch(url.toURI());
-		setupMethod(patch, newHeaders);
-		writeObject(paramMap, patch);
-		HttpResponse response = execute(patch);
-		EntityUtils.consumeQuietly(response.getEntity());
+		try
+		{
+			HttpPatch patch = new HttpPatch(url.toURI());
+
+			setupMethod(patch, newHeaders);
+			writeObject(paramMap, patch);
+			HttpResponse response = execute(patch);
+			EntityUtils.consumeQuietly(response.getEntity());
+		} catch (URISyntaxException | ParseException e)
+		{
+			throw new RuntimeRestException(e);
+		}
 	}
 
 	/*
@@ -428,7 +465,7 @@ public class RestClient implements RestClientInterface
 	 * @see com.cloudesire.tisana4j.RestClientInterface#post(java.net.URL, T)
 	 */
 	@Override
-	public <T> T post ( URL url, T obj ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
+	public <T> T post ( URL url, T obj ) throws RestException, RuntimeRestException
 	{
 
 		return post(url, obj, null);
@@ -442,13 +479,13 @@ public class RestClient implements RestClientInterface
 	 */
 	@Override
 	@SuppressWarnings ( "unchecked" )
-	public <T> T post ( URL url, T obj, Map<String, String> newHeaders ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
+	public <T> T post ( URL url, T obj, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
 	{
 		return (T) post(url, obj, newHeaders, obj.getClass());
 	}
 
 	@Override
-	public <T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
+	public <T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass ) throws RestException, RuntimeRestException
 	{
 		return post(url, obj, newHeaders, responseClass, null);
 	}
@@ -461,71 +498,92 @@ public class RestClient implements RestClientInterface
 	 */
 	@Override
 	public <T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass,
-			Map<String, String> responseHeaders ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
+			Map<String, String> responseHeaders ) throws RestException, RuntimeRestException
 	{
-		HttpPost post = new HttpPost(url.toURI());
-		setupMethod(post, newHeaders);
-		if (obj != null) writeObject(obj, post);
-		HttpResponse response = execute(post);
-		if (responseHeaders != null && response.getAllHeaders().length != 0)
+		try
 		{
-			for (Header header : response.getAllHeaders())
-			{
-				responseHeaders.put(header.getName(), header.getValue());
-			}
-		}
+			HttpPost post = new HttpPost(url.toURI());
 
-		if (response.getEntity() == null) return null;
-		if (responseClass == null)
+			setupMethod(post, newHeaders);
+			if (obj != null) writeObject(obj, post);
+			HttpResponse response = execute(post);
+			if (responseHeaders != null && response.getAllHeaders().length != 0)
+			{
+				for (Header header : response.getAllHeaders())
+				{
+					responseHeaders.put(header.getName(), header.getValue());
+				}
+			}
+
+			if (response.getEntity() == null) return null;
+			if (responseClass == null)
+			{
+				EntityUtils.consumeQuietly(response.getEntity());
+				return null;
+			}
+			return readObject(responseClass, response);
+		} catch (URISyntaxException | ParseException e)
 		{
-			EntityUtils.consumeQuietly(response.getEntity());
-			return null;
+			throw new RuntimeRestException(e);
 		}
-		return readObject(responseClass, response);
 	}
 
 	@Override
-	public <T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
+	public <T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass ) throws RestException, RuntimeRestException
 	{
 		return postData(url, filename, content, responseClass, null);
 	}
 
 	@Override
 	public <T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass,
-			Map<String, String> newHeaders ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
+			Map<String, String> newHeaders ) throws RestException, RuntimeRestException
 	{
-		HttpPost post = new HttpPost(url.toURI());
 
-		setupMethod(post, newHeaders);
-		MultipartEntity entity = new MultipartEntity();
-
-		InputStreamBody body = new InputStreamBody(content, filename);
-
-		entity.addPart("file", body);
-		post.setEntity(entity);
-		HttpResponse response = execute(post);
-		if (responseClass == null || response.getEntity() == null)
+		try
 		{
-			EntityUtils.consumeQuietly(response.getEntity());
-			return null;
+			HttpPost post = new HttpPost(url.toURI());
+
+			setupMethod(post, newHeaders);
+			MultipartEntity entity = new MultipartEntity();
+
+			InputStreamBody body = new InputStreamBody(content, filename);
+
+			entity.addPart("file", body);
+			post.setEntity(entity);
+			HttpResponse response = execute(post);
+			if (responseClass == null || response.getEntity() == null)
+			{
+				EntityUtils.consumeQuietly(response.getEntity());
+				return null;
+			}
+			return readObject(responseClass, response);
+		} catch (URISyntaxException | ParseException e)
+		{
+			throw new RuntimeRestException(e);
 		}
-		return readObject(responseClass, response);
 	}
 
 	@Override
-	public <T> T postFormData ( URL url, List<BasicNameValuePair> formData, Class<T> responseClass ) throws RestException, URISyntaxException, UnsupportedEncodingException
+	public <T> T postFormData ( URL url, List<BasicNameValuePair> formData, Class<T> responseClass )
+			throws RestException, RuntimeRestException
 	{
-		HttpPost post = new HttpPost(url.toURI());
-		setupMethod(post, null);
-		UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formData, "UTF-8");
-		post.setEntity(entity);
-		HttpResponse response = execute(post);
-		if (responseClass == null || response.getEntity() == null)
+		try
 		{
-			EntityUtils.consumeQuietly(response.getEntity());
-			return null;
+			HttpPost post = new HttpPost(url.toURI());
+			setupMethod(post, null);
+			UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formData, "UTF-8");
+			post.setEntity(entity);
+			HttpResponse response = execute(post);
+			if (responseClass == null || response.getEntity() == null)
+			{
+				EntityUtils.consumeQuietly(response.getEntity());
+				return null;
+			}
+			return readObject(responseClass, response);
+		} catch (URISyntaxException | UnsupportedEncodingException | ParseException e)
+		{
+			throw new RuntimeRestException(e);
 		}
-		return readObject(responseClass, response);
 	}
 
 	/*
@@ -534,7 +592,7 @@ public class RestClient implements RestClientInterface
 		 * @see com.cloudesire.tisana4j.RestClientInterface#put(java.net.URL, T)
 		 */
 	@Override
-	public <T> T put ( URL url, T obj ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
+	public <T> T put ( URL url, T obj ) throws RestException, RuntimeRestException
 	{
 		return put(url, obj, null);
 	}
@@ -547,14 +605,20 @@ public class RestClient implements RestClientInterface
 	 */
 	@Override
 	@SuppressWarnings ( "unchecked" )
-	public <T> T put ( URL url, T obj, Map<String, String> newHeaders ) throws ParseException, RestException, RuntimeRestException, URISyntaxException
+	public <T> T put ( URL url, T obj, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
 	{
-		HttpPut put = new HttpPut(url.toURI());
-		setupMethod(put, newHeaders);
-		writeObject(obj, put);
-		HttpResponse response = execute(put);
-		if (response.getEntity() == null) return null;
-		return (T) readObject(obj.getClass(), response);
+		try
+		{
+			HttpPut put = new HttpPut(url.toURI());
+			setupMethod(put, newHeaders);
+			writeObject(obj, put);
+			HttpResponse response = execute(put);
+			if (response.getEntity() == null) return null;
+			return (T) readObject(obj.getClass(), response);
+		} catch (URISyntaxException | ParseException e)
+		{
+			throw new RuntimeRestException(e);
+		}
 	}
 
 	/*
@@ -879,12 +943,19 @@ public class RestClient implements RestClientInterface
 	}
 
 	@Override
-	public InputStream getData ( URL url, Map<String, String> newHeaders ) throws URISyntaxException, RuntimeRestException, RestException, IllegalStateException, IOException
+	public InputStream getData ( URL url, Map<String, String> newHeaders ) throws RuntimeRestException, RestException
 	{
-		log.debug("Sending GET to " + url + " to retrieve CSV file");
-		HttpGet get = new HttpGet(url.toURI());
-		setupMethod(get, newHeaders);
-		HttpResponse response = execute(get);
-		return response.getEntity().getContent();
+		try
+		{
+			log.debug("Sending GET to " + url + " to retrieve CSV file");
+			HttpGet get;
+			get = new HttpGet(url.toURI());
+			setupMethod(get, newHeaders);
+			HttpResponse response = execute(get);
+			return response.getEntity().getContent();
+		} catch (URISyntaxException | IllegalStateException | IOException e)
+		{
+			throw new RuntimeRestException(e);
+		}
 	}
 }
