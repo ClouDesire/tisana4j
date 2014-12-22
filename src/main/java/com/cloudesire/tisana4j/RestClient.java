@@ -86,7 +86,7 @@ public class RestClient implements RestClientInterface
 	private final boolean skipValidation;
 	private Map<String, String> headers;
 	private HttpClient httpClient;
-	private static Logger log = LoggerFactory.getLogger(RestClient.class);
+	private final static Logger log = LoggerFactory.getLogger(RestClient.class);
 
 	@Override
 	public void toggleAuthentication()
@@ -175,38 +175,21 @@ public class RestClient implements RestClientInterface
 		this.ctx = ctx;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see com.cloudesire.tisana4j.RestClientInterface#delete(java.net.URL)
-	 */
 	@Override
 	public void delete ( URL url ) throws RestException, RuntimeRestException
 	{
 		delete(url, null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see com.cloudesire.tisana4j.RestClientInterface#delete(java.net.URL,
-	 * java.util.Map)
-	 */
 	@Override
 	public void delete ( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
 	{
 		delete(url, newHeaders, null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see com.cloudesire.tisana4j.RestClientInterface#delete(java.net.URL,
-	 * java.util.Map. java.util.Map)
-	 */
 	@Override
-	public void delete ( URL url, Map<String, String> newHeaders, Map<String, String> responseHeaders ) throws RestException, RuntimeRestException
-
+	public void delete ( URL url, Map<String, String> newHeaders, Map<String, String> responseHeaders )
+			throws RestException, RuntimeRestException
 	{
 		HttpDelete delete;
 		try
@@ -227,24 +210,12 @@ public class RestClient implements RestClientInterface
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see com.cloudesire.tisana4j.RestClientInterface#get(java.net.URL,
-	 * java.lang.Class)
-	 */
 	@Override
 	public <T> T get ( URL url, Class<T> clazz ) throws RestException, RuntimeRestException
 	{
 		return get(url, clazz, null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see com.cloudesire.tisana4j.RestClientInterface#get(java.net.URL,
-	 * java.lang.Class, java.util.Map)
-	 */
 	@Override
 	public <T> T get ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws RuntimeRestException,
 			RestException
@@ -261,13 +232,6 @@ public class RestClient implements RestClientInterface
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see
-	 * com.cloudesire.tisana4j.RestClientInterface#getCollection(java.net.URL,
-	 * java.lang.Class)
-	 */
 	@Override
 	public <T> List<T> getCollection ( URL url, Class<T> clazz ) throws RestException, RuntimeRestException
 	{
@@ -275,13 +239,6 @@ public class RestClient implements RestClientInterface
 
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see
-	 * com.cloudesire.tisana4j.RestClientInterface#getCollection(java.net.URL,
-	 * java.lang.Class, java.util.Map)
-	 */
 	@Override
 	public <T> List<T> getCollection ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
 	{
@@ -308,23 +265,12 @@ public class RestClient implements RestClientInterface
 		return httpResponseHandler;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see com.cloudesire.tisana4j.RestClientInterface#head(java.net.URL)
-	 */
 	@Override
 	public Map<String, String> head ( URL url ) throws RuntimeRestException, RestException
 	{
 		return head(url, null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see com.cloudesire.tisana4j.RestClientInterface#head(java.net.URL,
-	 * java.util.Map)
-	 */
 	@Override
 	public Map<String, String> head ( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
 	{
@@ -347,23 +293,12 @@ public class RestClient implements RestClientInterface
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see com.cloudesire.tisana4j.RestClientInterface#options(java.net.URL)
-	 */
 	@Override
 	public String[] options ( URL url ) throws RuntimeRestException, RestException
 	{
 		return options(url, null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see com.cloudesire.tisana4j.RestClientInterface#options(java.net.URL,
-	 * java.util.Map)
-	 */
 	@Override
 	public String[] options ( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
 	{
@@ -386,38 +321,18 @@ public class RestClient implements RestClientInterface
 		return allow.split(",");
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see com.cloudesire.tisana4j.RestClientInterface#patch(java.net.URL,
-	 * java.util.Map)
-	 */
 	@Override
 	public void patch ( URL url, Map<String, String> paramMap ) throws  RestException, RuntimeRestException
 	{
 		patch(url, paramMap, null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see
-	 * com.cloudesire.tisana4j.RestClientInterface#patchEntity(java.net.URL,
-	 * java.util.Map)
-	 */
 	@Override
 	public <T> T patchEntity ( URL url, Map<String, String> paramMap, Class<T> clazz ) throws RestException, RuntimeRestException
 	{
 		return patchEntity(url, paramMap, clazz, null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see
-	 * com.cloudesire.tisana4j.RestClientInterface#patchEntity(java.net.URL,
-	 * java.util.Map)
-	 */
 	@Override
 	public <T> T patchEntity ( URL url, Map<String, String> paramMap, Class<T> clazz, Map<String, String> newHeaders )
 			throws RestException, RuntimeRestException
@@ -435,12 +350,6 @@ public class RestClient implements RestClientInterface
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see com.cloudesire.tisana4j.RestClientInterface#patch(java.net.URL,
-	 * java.util.Map, java.util.Map)
-	 */
 	@Override
 	public void patch ( URL url, Map<String, String> paramMap, Map<String, String> newHeaders ) throws RestException,
 			RuntimeRestException
@@ -459,11 +368,6 @@ public class RestClient implements RestClientInterface
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see com.cloudesire.tisana4j.RestClientInterface#post(java.net.URL, T)
-	 */
 	@Override
 	public <T> T post ( URL url, T obj ) throws RestException, RuntimeRestException
 	{
@@ -471,12 +375,6 @@ public class RestClient implements RestClientInterface
 		return post(url, obj, null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see com.cloudesire.tisana4j.RestClientInterface#post(java.net.URL, T,
-	 * java.util.Map)
-	 */
 	@Override
 	@SuppressWarnings ( "unchecked" )
 	public <T> T post ( URL url, T obj, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
@@ -490,12 +388,6 @@ public class RestClient implements RestClientInterface
 		return post(url, obj, newHeaders, responseClass, null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see com.cloudesire.tisana4j.RestClientInterface#post(java.net.URL, T,
-	 * java.util.Map, java.lang.Class)
-	 */
 	@Override
 	public <T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass,
 			Map<String, String> responseHeaders ) throws RestException, RuntimeRestException
@@ -586,23 +478,12 @@ public class RestClient implements RestClientInterface
 		}
 	}
 
-	/*
-		 * (non-Javadoc)
-		 *
-		 * @see com.cloudesire.tisana4j.RestClientInterface#put(java.net.URL, T)
-		 */
 	@Override
 	public <T> T put ( URL url, T obj ) throws RestException, RuntimeRestException
 	{
 		return put(url, obj, null);
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see com.cloudesire.tisana4j.RestClientInterface#put(java.net.URL, T,
-	 * java.util.Map)
-	 */
 	@Override
 	@SuppressWarnings ( "unchecked" )
 	public <T> T put ( URL url, T obj, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
@@ -621,25 +502,12 @@ public class RestClient implements RestClientInterface
 		}
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see
-	 * com.cloudesire.tisana4j.RestClientInterface#setExceptionTranslator(com
-	 * .cloudesire.tisana4j.ExceptionTranslator)
-	 */
 	@Override
 	public void setExceptionTranslator ( ExceptionTranslator exceptionTranslator )
 	{
 		this.exceptionTranslator = exceptionTranslator;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see
-	 * com.cloudesire.tisana4j.RestClientInterface#setHeaders(java.util.Map)
-	 */
 	@Override
 	public void setHeaders ( Map<String, String> headers )
 	{
@@ -658,11 +526,6 @@ public class RestClient implements RestClientInterface
 		this.httpResponseHandler = httpResponseHandler;
 	}
 
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see com.cloudesire.tisana4j.RestClientInterface#setUseXml(boolean)
-	 */
 	@Override
 	public void setUseXml ( boolean useXml )
 	{
@@ -707,7 +570,6 @@ public class RestClient implements RestClientInterface
 			{
 				throw new RestException(responseCode, e.getMessage());
 			}
-
 		}
 	}
 
@@ -803,7 +665,6 @@ public class RestClient implements RestClientInterface
 				Scheme https = new Scheme("https", 443, sf);
 				httpClient.getConnectionManager().getSchemeRegistry().register(https);
 			}
-
 		}
 
 		return httpClient;
@@ -852,15 +713,14 @@ public class RestClient implements RestClientInterface
 	{
 		try (InputStream stream = response.getEntity().getContent())
 		{
-			try
-			{
-				T obj = mapper.reader(clazz).readValue(stream);
-				return obj;
-			} catch (JsonProcessingException e)
-			{
-				throw new ParseException(e);
-			}
-		} catch (IllegalStateException | IOException e1)
+			T obj = mapper.reader(clazz).readValue(stream);
+			return obj;
+		}
+		catch (JsonProcessingException e)
+		{
+			throw new ParseException(e);
+		}
+		catch (IllegalStateException | IOException e1)
 		{
 			throw new RuntimeRestException(e1);
 		}
