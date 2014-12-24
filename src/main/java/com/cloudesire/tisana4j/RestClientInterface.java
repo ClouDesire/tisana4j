@@ -12,11 +12,11 @@ import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
 
 public interface RestClientInterface
 {
+	Map<String, List<String>> getLastResponseHeaders();
+
 	void delete ( URL url ) throws RestException, RuntimeRestException;
 
 	void delete ( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
-
-	void delete ( URL url, Map<String, String> newHeaders, Map<String, String> responseHeaders ) throws RestException, RuntimeRestException;
 
 	<T> T get ( URL url, Class<T> clazz ) throws RestException, RuntimeRestException;
 
@@ -50,8 +50,6 @@ public interface RestClientInterface
 
 	<T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass ) throws RestException, RuntimeRestException;
 
-	<T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass, Map<String, String> responseHeaders ) throws RestException, RuntimeRestException;
-
 	<T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass ) throws RestException, RuntimeRestException;
 
 	<T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
@@ -69,8 +67,6 @@ public interface RestClientInterface
 	 *
 	 */
 	void setExceptionTranslator ( ExceptionTranslator exceptionTranslator );
-
-	void setHttpResponseHandler ( HttpResponseHandler httpResponseHandler );
 
 	void setHeaders ( Map<String, String> headers );
 

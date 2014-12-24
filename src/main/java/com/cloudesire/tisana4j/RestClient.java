@@ -13,6 +13,7 @@ import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -81,10 +82,10 @@ public class RestClient implements RestClientInterface
 	private boolean authenticated;
 	private boolean useXml = false;
 	private ExceptionTranslator exceptionTranslator = new DefaultExceptionTranslator();
-	private HttpResponseHandler httpResponseHandler;
 	private final ObjectMapper mapper = new ObjectMapper();
 	private final boolean skipValidation;
 	private Map<String, String> headers;
+	private Map<String, List<String>> responseHeaders;
 	private HttpClient httpClient;
 	private final static Logger log = LoggerFactory.getLogger(RestClient.class);
 
@@ -181,15 +182,30 @@ public class RestClient implements RestClientInterface
 		delete(url, null);
 	}
 
-	@Override
-	public void delete ( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
+	private Map<String,List<String>> parseResponseHeaders ( HttpResponse response )
 	{
-		delete(url, newHeaders, null);
+		responseHeaders = new HashMap<String, List<String>>();
+		if ( response.getAllHeaders().length != 0)
+		{
+			for (Header header : response.getAllHeaders())
+			{
+				String name = header.getName();
+				String value = header.getValue();
+				if ( responseHeaders.containsKey(name) )
+					responseHeaders.get(name).add( value );
+				else
+				{
+					List<String> x = new LinkedList<String>();
+					x.add(value);
+					responseHeaders.put(name, x);
+				}
+			}
+		}
+		return responseHeaders;
 	}
 
 	@Override
-	public void delete ( URL url, Map<String, String> newHeaders, Map<String, String> responseHeaders )
-			throws RestException, RuntimeRestException
+	public void delete ( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
 	{
 		HttpDelete delete;
 		try
@@ -201,13 +217,7 @@ public class RestClient implements RestClientInterface
 		}
 		setupMethod(delete, newHeaders);
 		HttpResponse response = execute(delete);
-		if (responseHeaders != null && response.getAllHeaders().length != 0)
-		{
-			for (Header header : response.getAllHeaders())
-			{
-				responseHeaders.put(header.getName(), header.getValue());
-			}
-		}
+		parseResponseHeaders( response );
 	}
 
 	@Override
@@ -247,22 +257,17 @@ public class RestClient implements RestClientInterface
 			HttpGet get = new HttpGet(url.toURI());
 			setupMethod(get, newHeaders);
 			HttpResponse response = execute(get);
+			parseResponseHeaders( response );
 			try (InputStream stream = response.getEntity().getContent())
 			{
-			
 				List<T> objList = mapper.reader(mapper.getTypeFactory().constructCollectionType(List.class, clazz)).readValue(stream);
 				return objList;
 			} 
-		} catch ( IOException | URISyntaxException e)
+		}
+		catch ( IOException | URISyntaxException e)
 		{
 			throw new RuntimeRestException(e);
 		}
-
-	}
-
-	public HttpResponseHandler getHttpResponseHandler ()
-	{
-		return httpResponseHandler;
 	}
 
 	@Override
@@ -287,7 +292,8 @@ public class RestClient implements RestClientInterface
 			for (int i = 0; i < allHeaders.length; i++)
 				headers.put(allHeaders[i].getName(), allHeaders[i].getValue());
 			return headers;
-		} catch (URISyntaxException e)
+		}
+		catch (URISyntaxException e)
 		{
 			throw new RuntimeRestException(e);
 		}
@@ -361,6 +367,7 @@ public class RestClient implements RestClientInterface
 			setupMethod(patch, newHeaders);
 			writeObject(paramMap, patch);
 			HttpResponse response = execute(patch);
+			parseResponseHeaders( response );
 			EntityUtils.consumeQuietly(response.getEntity());
 		} catch (URISyntaxException | ParseException e)
 		{
@@ -371,7 +378,6 @@ public class RestClient implements RestClientInterface
 	@Override
 	public <T> T post ( URL url, T obj ) throws RestException, RuntimeRestException
 	{
-
 		return post(url, obj, null);
 	}
 
@@ -383,14 +389,8 @@ public class RestClient implements RestClientInterface
 	}
 
 	@Override
-	public <T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass ) throws RestException, RuntimeRestException
-	{
-		return post(url, obj, newHeaders, responseClass, null);
-	}
-
-	@Override
-	public <T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass,
-			Map<String, String> responseHeaders ) throws RestException, RuntimeRestException
+	public <T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass )
+			throws RestException, RuntimeRestException
 	{
 		try
 		{
@@ -399,22 +399,21 @@ public class RestClient implements RestClientInterface
 			setupMethod(post, newHeaders);
 			if (obj != null) writeObject(obj, post);
 			HttpResponse response = execute(post);
-			if (responseHeaders != null && response.getAllHeaders().length != 0)
-			{
-				for (Header header : response.getAllHeaders())
-				{
-					responseHeaders.put(header.getName(), header.getValue());
-				}
-			}
 
-			if (response.getEntity() == null) return null;
+			if (response.getEntity() == null)
+			{
+				parseResponseHeaders( response );
+				return null;
+			}
 			if (responseClass == null)
 			{
+				parseResponseHeaders( response );
 				EntityUtils.consumeQuietly(response.getEntity());
 				return null;
 			}
 			return readObject(responseClass, response);
-		} catch (URISyntaxException | ParseException e)
+		}
+		catch (URISyntaxException | ParseException e)
 		{
 			throw new RuntimeRestException(e);
 		}
@@ -445,6 +444,7 @@ public class RestClient implements RestClientInterface
 			HttpResponse response = execute(post);
 			if (responseClass == null || response.getEntity() == null)
 			{
+				parseResponseHeaders( response );
 				EntityUtils.consumeQuietly(response.getEntity());
 				return null;
 			}
@@ -468,6 +468,7 @@ public class RestClient implements RestClientInterface
 			HttpResponse response = execute(post);
 			if (responseClass == null || response.getEntity() == null)
 			{
+				parseResponseHeaders( response );
 				EntityUtils.consumeQuietly(response.getEntity());
 				return null;
 			}
@@ -494,9 +495,14 @@ public class RestClient implements RestClientInterface
 			setupMethod(put, newHeaders);
 			writeObject(obj, put);
 			HttpResponse response = execute(put);
-			if (response.getEntity() == null) return null;
+			if (response.getEntity() == null)
+			{
+				parseResponseHeaders( response );
+				return null;
+			}
 			return (T) readObject(obj.getClass(), response);
-		} catch (URISyntaxException | ParseException e)
+		}
+		catch (URISyntaxException | ParseException e)
 		{
 			throw new RuntimeRestException(e);
 		}
@@ -521,12 +527,6 @@ public class RestClient implements RestClientInterface
 	}
 
 	@Override
-	public void setHttpResponseHandler ( HttpResponseHandler httpResponseHandler )
-	{
-		this.httpResponseHandler = httpResponseHandler;
-	}
-
-	@Override
 	public void setUseXml ( boolean useXml )
 	{
 		this.useXml = useXml;
@@ -545,10 +545,6 @@ public class RestClient implements RestClientInterface
 	private void checkError ( HttpResponse response ) throws RestException
 	{
 		int responseCode = response.getStatusLine().getStatusCode();
-		if (httpResponseHandler != null)
-		{
-			httpResponseHandler.setResponse(responseCode, response.getStatusLine().getReasonPhrase());
-		}
 		if (responseCode < 200 || responseCode >= 300)
 		{
 			try (InputStream stream = response.getEntity().getContent())
@@ -622,22 +618,22 @@ public class RestClient implements RestClientInterface
 		try
 		{
 			response = getHttpClient().execute(request);
+			log.debug("<<<< " + response.getStatusLine());
+			for (Header header : response.getAllHeaders())
+			{
+				log.trace("<<<< " + header.getName() + ": " + header.getValue());
+			}
 
-		log.debug("<<<< " + response.getStatusLine());
-		for (Header header : response.getAllHeaders())
-		{
-			log.trace("<<<< " + header.getName() + ": " + header.getValue());
+			if (response.getStatusLine().getStatusCode() == 204)
+			{
+				log.debug("Consuming quietly the response entity since server returned no content");
+				EntityUtils.consumeQuietly(response.getEntity());
+			}
+
+			checkError(response);
+			return response;
 		}
-
-		if (response.getStatusLine().getStatusCode() == 204)
-		{
-			log.debug("Consuming quietly the response entity since server returned no content");
-			EntityUtils.consumeQuietly(response.getEntity());
-		}
-
-		checkError(response);
-		return response;
-		} catch (KeyManagementException |  NoSuchAlgorithmException | IOException e)
+		catch (KeyManagementException |  NoSuchAlgorithmException | IOException e)
 		{
 			throw new RuntimeRestException(e);
 		}
@@ -677,7 +673,6 @@ public class RestClient implements RestClientInterface
 		ctx = SSLContext.getInstance("SSL");
 		TrustManager tm = new X509TrustManager()
 		{
-
 			@Override
 			public void checkClientTrusted ( X509Certificate[] arg0, String arg1 ) throws CertificateException
 			{
@@ -702,6 +697,7 @@ public class RestClient implements RestClientInterface
 
 	private <T> T readObject ( Class<T> clazz, HttpResponse response ) throws ParseException, RuntimeRestException
 	{
+		parseResponseHeaders( response );
 		if (useXml)
 		{
 			return parseXml(clazz, response);
@@ -794,13 +790,14 @@ public class RestClient implements RestClientInterface
 			try
 			{
 				context = JAXBContext.newInstance(obj.getClass());
-			Marshaller m = context.createMarshaller();
-			m.marshal(obj, baos);
-			String payload = baos.toString();
-			StringEntity entity = new StringEntity(payload);
-			log.debug("Payload:\n " + payload);
-			request.setEntity(entity);
-			} catch (JAXBException | UnsupportedEncodingException e)
+				Marshaller m = context.createMarshaller();
+				m.marshal(obj, baos);
+				String payload = baos.toString();
+				StringEntity entity = new StringEntity(payload);
+				log.debug("Payload:\n " + payload);
+				request.setEntity(entity);
+			}
+			catch (JAXBException | UnsupportedEncodingException e)
 			{
 				throw new ParseException(e);
 			}
@@ -818,9 +815,16 @@ public class RestClient implements RestClientInterface
 			setupMethod(get, newHeaders);
 			HttpResponse response = execute(get);
 			return response.getEntity().getContent();
-		} catch (URISyntaxException | IllegalStateException | IOException e)
+		}
+		catch (URISyntaxException | IllegalStateException | IOException e)
 		{
 			throw new RuntimeRestException(e);
 		}
+	}
+
+	@Override
+	public Map<String, List<String>> getLastResponseHeaders()
+	{
+		return responseHeaders;
 	}
 }
