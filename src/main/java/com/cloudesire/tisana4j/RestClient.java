@@ -1,6 +1,43 @@
 package com.cloudesire.tisana4j;
 
 
+import com.cloudesire.tisana4j.ExceptionTranslator.ResponseMessage;
+import com.cloudesire.tisana4j.exceptions.*;
+import com.fasterxml.jackson.core.Base64Variants;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import org.apache.commons.io.IOUtils;
+import org.apache.http.Header;
+import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.*;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.entity.mime.MultipartEntity;
+import org.apache.http.entity.mime.content.InputStreamBody;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.params.CoreConnectionPNames;
+import org.apache.http.params.HttpParams;
+import org.apache.http.util.EntityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.bind.Unmarshaller;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,62 +54,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpHead;
-import org.apache.http.client.methods.HttpOptions;
-import org.apache.http.client.methods.HttpPatch;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.client.methods.HttpUriRequest;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.entity.ContentType;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.entity.mime.MultipartEntity;
-import org.apache.http.entity.mime.content.InputStreamBody;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.PoolingClientConnectionManager;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.CoreConnectionPNames;
-import org.apache.http.params.HttpParams;
-import org.apache.http.util.EntityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.cloudesire.tisana4j.ExceptionTranslator.ResponseMessage;
-import com.cloudesire.tisana4j.exceptions.AccessDeniedException;
-import com.cloudesire.tisana4j.exceptions.BadRequestException;
-import com.cloudesire.tisana4j.exceptions.ConflictException;
-import com.cloudesire.tisana4j.exceptions.DefaultExceptionTranslator;
-import com.cloudesire.tisana4j.exceptions.InternalServerErrorException;
-import com.cloudesire.tisana4j.exceptions.ParseException;
-import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
-import com.cloudesire.tisana4j.exceptions.RestException;
-import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
-import com.cloudesire.tisana4j.exceptions.UnauthorizedException;
-import com.cloudesire.tisana4j.exceptions.UnprocessableEntityException;
-import com.fasterxml.jackson.core.Base64Variants;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
 
 public class RestClient implements RestClientInterface
 {
@@ -374,7 +355,7 @@ public class RestClient implements RestClientInterface
 			throw new RuntimeRestException(e);
 		}
 	}
-
+	
 	@Override
 	public <T> T post ( URL url, T obj ) throws RestException, RuntimeRestException
 	{
@@ -386,8 +367,8 @@ public class RestClient implements RestClientInterface
 	public <T> T post ( URL url, T obj, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
 	{
 		return (T) post(url, obj, newHeaders, obj.getClass());
-	}
-
+	}	
+	
 	@Override
 	public <T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass )
 			throws RestException, RuntimeRestException
@@ -418,7 +399,7 @@ public class RestClient implements RestClientInterface
 			throw new RuntimeRestException(e);
 		}
 	}
-
+	
 	@Override
 	public <T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass ) throws RestException, RuntimeRestException
 	{
@@ -485,29 +466,37 @@ public class RestClient implements RestClientInterface
 		return put(url, obj, null);
 	}
 
-	@Override
 	@SuppressWarnings ( "unchecked" )
+	@Override
 	public <T> T put ( URL url, T obj, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
+	{
+		return (T) put (url, obj, newHeaders,obj.getClass());
+	}
+
+	@SuppressWarnings ( "unchecked" )
+	@Override
+	public <T, R> R put ( URL url, T obj,Map<String, String> newHeaders, Class<R> responseClass)
+			throws RestException, RuntimeRestException
 	{
 		try
 		{
 			HttpPut put = new HttpPut(url.toURI());
 			setupMethod(put, newHeaders);
-			writeObject(obj, put);
+			if( obj!=null ) writeObject(obj, put);
 			HttpResponse response = execute(put);
 			if (response.getEntity() == null)
 			{
 				parseResponseHeaders( response );
 				return null;
 			}
-			return (T) readObject(obj.getClass(), response);
+			return (R) readObject(responseClass, response);
 		}
 		catch (URISyntaxException | ParseException e)
 		{
 			throw new RuntimeRestException(e);
 		}
 	}
-
+	
 	@Override
 	public void setExceptionTranslator ( ExceptionTranslator exceptionTranslator )
 	{
@@ -827,4 +816,5 @@ public class RestClient implements RestClientInterface
 	{
 		return responseHeaders;
 	}
+
 }

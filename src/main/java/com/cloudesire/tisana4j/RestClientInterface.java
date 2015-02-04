@@ -1,14 +1,13 @@
 package com.cloudesire.tisana4j;
 
+import com.cloudesire.tisana4j.exceptions.RestException;
+import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
+import org.apache.http.message.BasicNameValuePair;
+
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
-
-import org.apache.http.message.BasicNameValuePair;
-
-import com.cloudesire.tisana4j.exceptions.RestException;
-import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
 
 public interface RestClientInterface
 {
@@ -59,7 +58,9 @@ public interface RestClientInterface
 	<T> T put ( URL url, T obj ) throws RestException, RuntimeRestException;
 
 	<T> T put ( URL url, T obj, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
-
+		
+	<T, R> R put ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass ) throws RestException, RuntimeRestException;
+	
 	/**
 	 * Set an exception translator for server errors
 	 *
