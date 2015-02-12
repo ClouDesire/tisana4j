@@ -216,7 +216,10 @@ public class RestClient implements RestClientInterface
 		{
 			HttpGet get = new HttpGet(url.toURI());
 			setupMethod(get, newHeaders);
-			return readObject(clazz, execute(get));
+			HttpResponse response = execute(get);
+			if ( response.getStatusLine().getStatusCode() == 204 )
+				return null;
+			return readObject(clazz, response );
 		} catch (URISyntaxException | ParseException e)
 		{
 			throw new RuntimeRestException(e);
@@ -239,6 +242,8 @@ public class RestClient implements RestClientInterface
 			setupMethod(get, newHeaders);
 			HttpResponse response = execute(get);
 			parseResponseHeaders( response );
+			if ( response.getStatusLine().getStatusCode() == 204 )
+				return null;
 			try (InputStream stream = response.getEntity().getContent())
 			{
 				List<T> objList = mapper.reader(mapper.getTypeFactory().constructCollectionType(List.class, clazz)).readValue(stream);
