@@ -1,7 +1,7 @@
 package com.cloudesire.tisana4j;
 
 import com.cloudesire.tisana4j.exceptions.RestException;
-
+import org.apache.http.Header;
 
 /**
  * Optional exception translator to handle errors with custom Exceptions.
@@ -36,9 +36,12 @@ public interface ExceptionTranslator
 	 *            Content of the response
 	 * @param returnMessageRef
 	 *            if method returns null you may set a response message here
-	 * 
+	 *
+	 *  @param headers
+	 * 			  HTTP headers
 	 * @return the exception to throw, or null to throw tisana default
 	 *         exception.
 	 */
-	public <T extends RestException > T  translateException ( int responseCode, String responseMessage, String bodyMessage, ResponseMessage returnMessageRef );
+	<T extends RestException > RestException translateException ( int responseCode, String responseMessage,
+			String bodyMessage, ResponseMessage returnMessageRef, Header[] headers );
 }

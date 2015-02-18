@@ -1,17 +1,10 @@
 package com.cloudesire.tisana4j.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.InputStream;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
+import com.cloudesire.tisana4j.ExceptionTranslator;
+import com.cloudesire.tisana4j.RestClient;
+import com.cloudesire.tisana4j.exceptions.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.Header;
 import org.apache.http.localserver.LocalTestServer;
 import org.apache.http.protocol.HttpRequestHandler;
 import org.junit.After;
@@ -21,15 +14,13 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.cloudesire.tisana4j.ExceptionTranslator;
-import com.cloudesire.tisana4j.RestClient;
-import com.cloudesire.tisana4j.exceptions.AccessDeniedException;
-import com.cloudesire.tisana4j.exceptions.BadRequestException;
-import com.cloudesire.tisana4j.exceptions.InternalServerErrorException;
-import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
-import com.cloudesire.tisana4j.exceptions.RestException;
-import com.cloudesire.tisana4j.exceptions.UnprocessableEntityException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import static org.junit.Assert.*;
 
 public class HTTPTest
 {
@@ -54,7 +45,7 @@ public class HTTPTest
 		@SuppressWarnings ( "unchecked" )
 		@Override
 		public RestException translateException ( int responseCode, String responseMessage,
-				String errorStream, ResponseMessage returnMessageRef )
+				String errorStream, ResponseMessage returnMessageRef, Header[] headers )
 		{
 			if(responseCode == 400)
 			{

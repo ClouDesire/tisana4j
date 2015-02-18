@@ -550,7 +550,7 @@ public class RestClient implements RestClientInterface
 
 				ResponseMessage responseMessage = new ResponseMessage();
 				RestException translatedException = exceptionTranslator.translateException(responseCode, response
-					.getStatusLine().getReasonPhrase(), errorStream, responseMessage);
+					.getStatusLine().getReasonPhrase(), errorStream, responseMessage, response.getAllHeaders());
 
 				if (translatedException != null) throw translatedException;
 
