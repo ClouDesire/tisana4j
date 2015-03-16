@@ -214,13 +214,27 @@ public class RestClient implements RestClientInterface
 		log.debug("Sending GET to " + url);
 		try
 		{
+			HttpResponse response = get(url, newHeaders);
+			return readObject(clazz, response );
+		} catch ( ParseException e)
+		{
+			throw new RuntimeRestException(e);
+		}
+	}
+
+	// FIXME should not expose the internal http client object
+	public HttpResponse get ( URL url, Map<String, String> newHeaders ) throws RuntimeRestException, RestException
+	{
+		log.debug("Sending GET to " + url);
+		try
+		{
 			HttpGet get = new HttpGet(url.toURI());
 			setupMethod(get, newHeaders);
 			HttpResponse response = execute(get);
 			if ( response.getStatusLine().getStatusCode() == 204 )
 				return null;
-			return readObject(clazz, response );
-		} catch (URISyntaxException | ParseException e)
+			return response;
+		} catch (URISyntaxException e)
 		{
 			throw new RuntimeRestException(e);
 		}
