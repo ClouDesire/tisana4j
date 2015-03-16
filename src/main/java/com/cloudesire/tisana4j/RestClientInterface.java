@@ -69,7 +69,7 @@ public interface RestClientInterface
 	/**
 	 * Set an exception translator for server errors
 	 *
-	 * @param exceptionTranslator
+	 * @param exceptionTranslator the custom handler for errors
 	 *
 	 */
 	void setExceptionTranslator ( ExceptionTranslator exceptionTranslator );

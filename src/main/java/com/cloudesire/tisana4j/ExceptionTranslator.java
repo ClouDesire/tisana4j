@@ -37,11 +37,11 @@ public interface ExceptionTranslator
 	 * @param returnMessageRef
 	 *            if method returns null you may set a response message here
 	 *
-	 *  @param headers
+	 * @param headers
 	 * 			  HTTP headers
 	 * @return the exception to throw, or null to throw tisana default
 	 *         exception.
 	 */
-	<T extends RestException > RestException translateException ( int responseCode, String responseMessage,
+	RestException translateException ( int responseCode, String responseMessage,
 			String bodyMessage, ResponseMessage returnMessageRef, Header[] headers );
 }
