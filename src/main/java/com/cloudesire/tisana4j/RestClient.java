@@ -214,7 +214,7 @@ public class RestClient implements RestClientInterface
 		log.debug("Sending GET to " + url);
 		try
 		{
-			HttpResponse response = get(url, newHeaders);
+			HttpResponse response = getInternal(url, newHeaders);
 			return readObject(clazz, response );
 		} catch ( ParseException e)
 		{
@@ -222,14 +222,13 @@ public class RestClient implements RestClientInterface
 		}
 	}
 
-	// FIXME should not expose the internal http client object
-	public HttpResponse get ( URL url, Map<String, String> newHeaders ) throws RuntimeRestException, RestException
+	private HttpResponse getInternal ( URL url, Map<String, String> headers ) throws RuntimeRestException, RestException
 	{
 		log.debug("Sending GET to " + url);
 		try
 		{
 			HttpGet get = new HttpGet(url.toURI());
-			setupMethod(get, newHeaders);
+			setupMethod(get, headers);
 			HttpResponse response = execute(get);
 			if ( response.getStatusLine().getStatusCode() == 204 )
 				return null;
@@ -238,6 +237,18 @@ public class RestClient implements RestClientInterface
 		{
 			throw new RuntimeRestException(e);
 		}
+	}
+
+	@Override
+	public InputStream get ( URL url ) throws RuntimeRestException, RestException, IOException
+	{
+		return getInternal(url, new HashMap<String, String>()).getEntity().getContent();
+	}
+
+	@Override
+	public InputStream get ( URL url, Map<String, String> headers ) throws RuntimeRestException, RestException, IOException
+	{
+		return getInternal(url, headers).getEntity().getContent();
 	}
 
 	@Override

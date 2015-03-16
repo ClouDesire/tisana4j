@@ -4,6 +4,7 @@ import com.cloudesire.tisana4j.exceptions.RestException;
 import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
 import org.apache.http.message.BasicNameValuePair;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
@@ -22,6 +23,10 @@ public interface RestClientInterface
 	<T> T get ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
 
 	InputStream getData ( URL url, Map<String, String> newHeaders ) throws RuntimeRestException, RestException;
+
+	InputStream get ( URL url ) throws RuntimeRestException, RestException, IOException;
+
+	InputStream get ( URL url, Map<String, String> headers ) throws RuntimeRestException, RestException, IOException;
 
 	<T> List<T> getCollection ( URL url, Class<T> clazz ) throws RestException, RuntimeRestException;
 

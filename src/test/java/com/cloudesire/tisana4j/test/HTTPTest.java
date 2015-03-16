@@ -4,6 +4,7 @@ import com.cloudesire.tisana4j.ExceptionTranslator;
 import com.cloudesire.tisana4j.RestClient;
 import com.cloudesire.tisana4j.exceptions.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.localserver.LocalTestServer;
 import org.apache.http.protocol.HttpRequestHandler;
@@ -16,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -159,6 +161,17 @@ public class HTTPTest
 		Resource response = client.get(new URL(serverUrl + "/resource/" + resourceId), Resource.class);
 		assertNotNull(response.getId());
 		assertTrue(response.getId().equals(resourceId));
+	}
+
+	@Test
+	public void testGetRaw () throws Exception
+	{
+		final int resourceId = 15;
+		InputStream response = client.get(new URL(serverUrl + "/resource/" + resourceId));
+		assertNotNull(response);
+		String s = IOUtils.toString(response, StandardCharsets.UTF_8.toString());
+		assertNotNull(s);
+		assertEquals("{ \"id\": 15 }", s);
 	}
 
 	@Test
