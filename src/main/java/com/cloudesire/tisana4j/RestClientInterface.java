@@ -42,11 +42,19 @@ public interface RestClientInterface
 
 	void patch ( URL url, Map<String, String> paramMap ) throws RestException, RuntimeRestException;
 
+	void patchO ( URL url, Map<String, Object> paramMap ) throws RestException, RuntimeRestException;
+
 	void patch ( URL url, Map<String, String> paramMap, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+
+	void patchO ( URL url, Map<String, Object> paramMap, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
 
 	<T> T patchEntity ( URL url, Map<String, String> paramMap, Class<T> clazz ) throws RestException, RuntimeRestException;
 
+	<T> T patchEntityO ( URL url, Map<String, Object> paramMap, Class<T> clazz ) throws RestException, RuntimeRestException;
+
 	<T> T patchEntity ( URL url, Map<String, String> paramMap, Class<T> clazz, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+
+	<T> T patchEntityO ( URL url, Map<String, Object> paramMap, Class<T> clazz, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
 
 	<T> T post ( URL url, T obj ) throws RestException, RuntimeRestException;
 

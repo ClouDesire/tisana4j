@@ -344,15 +344,32 @@ public class RestClient implements RestClientInterface
 		patch(url, paramMap, null);
 	}
 
+	@Override public void patchO ( URL url, Map<String, Object> paramMap ) throws RestException, RuntimeRestException
+	{
+		patchO(url, paramMap, null);
+	}
+
 	@Override
 	public <T> T patchEntity ( URL url, Map<String, String> paramMap, Class<T> clazz ) throws RestException, RuntimeRestException
 	{
 		return patchEntity(url, paramMap, clazz, null);
 	}
 
+	@Override public <T> T patchEntityO ( URL url, Map<String, Object> paramMap, Class<T> clazz )
+			throws RestException, RuntimeRestException
+	{
+		return patchEntityO(url, paramMap, clazz, null);
+	}
+
 	@Override
 	public <T> T patchEntity ( URL url, Map<String, String> paramMap, Class<T> clazz, Map<String, String> newHeaders )
 			throws RestException, RuntimeRestException
+	{
+		return patchEntityO(url, new HashMap<String, Object>(paramMap), clazz, newHeaders);
+	}
+
+	@Override public <T> T patchEntityO ( URL url, Map<String, Object> paramMap, Class<T> clazz,
+			Map<String, String> newHeaders ) throws RestException, RuntimeRestException
 	{
 		try
 		{
@@ -371,6 +388,12 @@ public class RestClient implements RestClientInterface
 	public void patch ( URL url, Map<String, String> paramMap, Map<String, String> newHeaders ) throws RestException,
 			RuntimeRestException
 	{
+		patchO(url, new HashMap<String, Object>(paramMap), newHeaders);
+	}
+
+	@Override public void patchO ( URL url, Map<String, Object> paramMap, Map<String, String> newHeaders )
+			throws RestException, RuntimeRestException
+	{
 		try
 		{
 			HttpPatch patch = new HttpPatch(url.toURI());
@@ -385,7 +408,7 @@ public class RestClient implements RestClientInterface
 			throw new RuntimeRestException(e);
 		}
 	}
-	
+
 	@Override
 	public <T> T post ( URL url, T obj ) throws RestException, RuntimeRestException
 	{
