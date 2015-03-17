@@ -737,6 +737,8 @@ public class RestClient implements RestClientInterface
 	private <T> T readObject ( Class<T> clazz, HttpResponse response ) throws ParseException, RuntimeRestException
 	{
 		parseResponseHeaders( response );
+		if (response.getEntity() == null)
+			return null;
 		Header contentType = response.getEntity().getContentType();
 		if (contentType != null)
 		{
@@ -745,7 +747,7 @@ public class RestClient implements RestClientInterface
 			if (contentType.getValue().contains(ContentType.APPLICATION_XML.toString()))
 				return parseXml(clazz, response);
 		}
-		return null;
+		throw new ParseException("Unsupported content type " + contentType.getValue());
 	}
 
 	private <T> T parseJson ( Class<T> clazz, HttpResponse response ) throws ParseException, RuntimeRestException

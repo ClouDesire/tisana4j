@@ -9,4 +9,8 @@ public class ParseException extends Exception
 		super(e);
 	}
 
+	public ParseException ( String message )
+	{
+		super(message);
+	}
 }
