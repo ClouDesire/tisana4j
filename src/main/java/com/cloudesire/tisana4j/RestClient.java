@@ -742,9 +742,9 @@ public class RestClient implements RestClientInterface
 		Header contentType = response.getEntity().getContentType();
 		if (contentType != null)
 		{
-			if (contentType.getValue().contains(ContentType.APPLICATION_JSON.toString()))
+			if (contentType.getValue().contains(ContentType.APPLICATION_JSON.getMimeType()))
 				return parseJson(clazz, response);
-			if (contentType.getValue().contains(ContentType.APPLICATION_XML.toString()))
+			if (contentType.getValue().contains(ContentType.APPLICATION_XML.getMimeType()))
 				return parseXml(clazz, response);
 		}
 		throw new ParseException("Unsupported content type " + contentType.getValue());
