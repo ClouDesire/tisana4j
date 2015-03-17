@@ -737,11 +737,15 @@ public class RestClient implements RestClientInterface
 	private <T> T readObject ( Class<T> clazz, HttpResponse response ) throws ParseException, RuntimeRestException
 	{
 		parseResponseHeaders( response );
-		if (useXml)
+		Header contentType = response.getEntity().getContentType();
+		if (contentType != null)
 		{
-			return parseXml(clazz, response);
+			if (contentType.getValue().contains(ContentType.APPLICATION_JSON.toString()))
+				return parseJson(clazz, response);
+			if (contentType.getValue().contains(ContentType.APPLICATION_XML.toString()))
+				return parseXml(clazz, response);
 		}
-		return parseJson(clazz, response);
+		return null;
 	}
 
 	private <T> T parseJson ( Class<T> clazz, HttpResponse response ) throws ParseException, RuntimeRestException

@@ -20,7 +20,7 @@ public class PostHttpRequestHandler extends BaseHttpRequestHandler
 			if (!request.getRequestLine().getMethod().equals("POST")) throw new Exception("Not a POST");
 			Resource r = getJsonBodyMessage(request, Resource.class);
 			String json = "{ \"id\": " + r.getId() + " }";
-			setResponseEntity(response, json, 201);
+			setJsonResponseEntity(response, json, 201);
 		} catch (Exception e)
 		{
 			response.setStatusCode(500);

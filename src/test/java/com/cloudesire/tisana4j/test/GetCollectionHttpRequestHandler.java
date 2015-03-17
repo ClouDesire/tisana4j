@@ -18,7 +18,7 @@ public class GetCollectionHttpRequestHandler extends BaseHttpRequestHandler
 		{
 			if (!request.getRequestLine().getMethod().equals("GET")) throw new Exception("Not a GET");
 			String json = "[{ \"id\": 15 }]";
-			setResponseEntity(response, json, 200);
+			setJsonResponseEntity(response, json, 200);
 		} catch (Exception e)
 		{
 			response.setStatusCode(500);

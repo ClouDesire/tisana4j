@@ -16,7 +16,7 @@ public class ServerErrorHandler extends BaseHttpRequestHandler
 	{
 			String[] uriArray = request.getRequestLine().getUri().split("/");
 			String json = "{ \"error\": \"Customized Internal Server Error\" }";
-			setResponseEntity(response, json, Integer.valueOf(uriArray[2]));
+			setJsonResponseEntity(response, json, Integer.valueOf(uriArray[2]));
 	}
 
 }

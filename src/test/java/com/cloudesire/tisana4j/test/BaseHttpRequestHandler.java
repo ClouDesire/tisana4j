@@ -1,15 +1,16 @@
 package com.cloudesire.tisana4j.test;
 
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.entity.ContentType;
 import org.apache.http.message.BasicHttpEntityEnclosingRequest;
 import org.apache.http.protocol.HttpRequestHandler;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 public abstract class BaseHttpRequestHandler implements HttpRequestHandler
 {
@@ -28,11 +29,12 @@ public abstract class BaseHttpRequestHandler implements HttpRequestHandler
 		throw new Exception("Unable to retrieve body message");
 	}
 
-	protected void setResponseEntity ( HttpResponse response, String json, int statusCode )
+	protected void setJsonResponseEntity ( HttpResponse response, String json, int statusCode )
 	{
 		BasicHttpEntity entity = new BasicHttpEntity();
 		entity.setContent(new ByteArrayInputStream(json.getBytes()));
 		response.setEntity(entity);
 		response.setStatusCode(statusCode);
+		response.setHeader(HttpHeaders.CONTENT_TYPE, ContentType.APPLICATION_JSON.toString());
 	}
 }

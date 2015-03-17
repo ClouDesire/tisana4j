@@ -21,7 +21,7 @@ public class PutHttpRequestHandler extends BaseHttpRequestHandler
 			if (!request.getRequestLine().getMethod().equals("PUT")) throw new Exception("Not a PUT");
 			Resource r = getJsonBodyMessage(request, Resource.class);
 			String json = "{ \"id\": " + r.getId() + " }";
-			setResponseEntity(response, json, 200);
+			setJsonResponseEntity(response, json, 200);
 		} catch (Exception e)
 		{
 			response.setStatusCode(500);
