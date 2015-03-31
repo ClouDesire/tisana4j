@@ -165,7 +165,7 @@ public class RestClient implements RestClientInterface
 
 	private Map<String,List<String>> parseResponseHeaders ( HttpResponse response )
 	{
-		responseHeaders = new HashMap<String, List<String>>();
+		responseHeaders = new HashMap<>();
 		if ( response.getAllHeaders().length != 0)
 		{
 			for (Header header : response.getAllHeaders())
@@ -176,7 +176,7 @@ public class RestClient implements RestClientInterface
 					responseHeaders.get(name).add( value );
 				else
 				{
-					List<String> x = new LinkedList<String>();
+					List<String> x = new LinkedList<>();
 					x.add(value);
 					responseHeaders.put(name, x);
 				}
@@ -573,7 +573,7 @@ public class RestClient implements RestClientInterface
 
 	private void applyHeaders ( HttpRequest request, Map<String, String> newHeaders )
 	{
-		Map<String, String> mergedHeaders = new HashMap<String, String>();
+		Map<String, String> mergedHeaders = new HashMap<>();
 		if (headers != null) mergedHeaders.putAll(headers);
 		if (newHeaders != null) mergedHeaders.putAll(newHeaders);
 
@@ -744,7 +744,7 @@ public class RestClient implements RestClientInterface
 		{
 			if (contentType.getValue().contains(ContentType.APPLICATION_JSON.getMimeType()))
 				return parseJson(clazz, response);
-			if (contentType.getValue().contains(ContentType.APPLICATION_XML.getMimeType()))
+			if (contentType.getValue().toLowerCase().contains("xml"))
 				return parseXml(clazz, response);
 		}
 		throw new ParseException("Unsupported content type " + contentType.getValue());
