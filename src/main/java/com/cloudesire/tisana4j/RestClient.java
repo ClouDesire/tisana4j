@@ -82,6 +82,11 @@ public class RestClient implements RestClientInterface
 		return username;
 	}
 
+	@Override public ObjectMapper getObjectMapper ()
+	{
+		return mapper;
+	}
+
 	/**
 	 * Default settings: no authentication and verify if server certificate is
 	 * valid. Uses json. For use xml setUseXml() to true.

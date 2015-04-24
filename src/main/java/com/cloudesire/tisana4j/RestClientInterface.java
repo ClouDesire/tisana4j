@@ -2,6 +2,7 @@ package com.cloudesire.tisana4j;
 
 import com.cloudesire.tisana4j.exceptions.RestException;
 import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
@@ -95,4 +96,6 @@ public interface RestClientInterface
 	void toggleAuthentication();
 
 	String getUsername();
+
+	ObjectMapper getObjectMapper();
 }
