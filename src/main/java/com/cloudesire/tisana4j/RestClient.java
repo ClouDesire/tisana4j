@@ -604,7 +604,7 @@ public class RestClient implements RestClientInterface
 
 				if (translatedException != null) throw translatedException;
 
-				throw getDefaultException(responseCode, response.getStatusLine().getReasonPhrase(), errorStream );
+				throw getDefaultException(responseCode, response.getStatusLine().getReasonPhrase(), responseMessage.getResponse()!=null ? responseMessage.getResponse() : errorStream );
 
 			} catch (IllegalStateException | IOException e)
 			{

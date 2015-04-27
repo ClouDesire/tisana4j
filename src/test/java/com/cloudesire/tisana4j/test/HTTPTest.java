@@ -216,7 +216,7 @@ public class HTTPTest
 			if (!(e instanceof InternalServerErrorException)) fail();
 			RestException re = (RestException) e;
 			assertEquals(500,re.getResponseCode());
-			assertEquals("Internal Server Error",re.getMessage());
+			assertEquals("{ \"error\": \"Customized Internal Server Error\" }",re.getMessage());
 		}
 	}
 	@Test
