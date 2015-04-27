@@ -204,6 +204,7 @@ public class RestClient implements RestClientInterface
 		setupMethod(delete, newHeaders);
 		HttpResponse response = execute(delete);
 		parseResponseHeaders( response );
+		EntityUtils.consumeQuietly(response.getEntity());
 	}
 
 	@Override
