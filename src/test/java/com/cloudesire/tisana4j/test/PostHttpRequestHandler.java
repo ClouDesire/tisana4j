@@ -2,6 +2,7 @@ package com.cloudesire.tisana4j.test;
 
 import java.io.IOException;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -21,6 +22,10 @@ public class PostHttpRequestHandler extends BaseHttpRequestHandler
 			Resource r = getJsonBodyMessage(request, Resource.class);
 			String json = "{ \"id\": " + r.getId() + " }";
 			setJsonResponseEntity(response, json, 201);
+		} catch (JsonMappingException e)
+		{
+			// empty body request
+			response.setStatusCode(200);
 		} catch (Exception e)
 		{
 			response.setStatusCode(500);

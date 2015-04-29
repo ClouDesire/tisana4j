@@ -26,7 +26,7 @@ public abstract class BaseHttpRequestHandler implements HttpRequestHandler
 				return mapper.reader(clazz).readValue(content);
 			}
 		}
-		throw new Exception("Unable to retrieve body message");
+		return null;
 	}
 
 	protected void setJsonResponseEntity ( HttpResponse response, String json, int statusCode )

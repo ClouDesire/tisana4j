@@ -194,6 +194,13 @@ public class HTTPTest
 	}
 
 	@Test
+	public void testEmptyPostEmptyResponse () throws Exception
+	{
+		Resource response = client.post(new URL(serverUrl + "/create/"), null, null, null);
+		assertNull(response);
+	}
+
+	@Test
 	public void testPut () throws Exception
 	{
 		final int resourceId = 15;
