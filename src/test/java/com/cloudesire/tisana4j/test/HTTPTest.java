@@ -3,6 +3,7 @@ package com.cloudesire.tisana4j.test;
 import com.cloudesire.tisana4j.ExceptionTranslator;
 import com.cloudesire.tisana4j.RestClient;
 import com.cloudesire.tisana4j.exceptions.*;
+import com.cloudesire.tisana4j.test.handlers.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;

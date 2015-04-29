@@ -1,4 +1,4 @@
-package com.cloudesire.tisana4j.test;
+package com.cloudesire.tisana4j.test.handlers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.http.HttpHeaders;

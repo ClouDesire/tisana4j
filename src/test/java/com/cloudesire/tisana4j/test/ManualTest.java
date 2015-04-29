@@ -4,7 +4,8 @@ import java.net.URL;
 
 import com.cloudesire.tisana4j.RestClient;
 
-public class BasicTest {
+public class ManualTest
+{
 	private static class NetworkAddress {
 		private String ip;
 

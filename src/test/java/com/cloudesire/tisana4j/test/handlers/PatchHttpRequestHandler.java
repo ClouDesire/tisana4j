@@ -1,4 +1,4 @@
-package com.cloudesire.tisana4j.test;
+package com.cloudesire.tisana4j.test.handlers;
 
 import java.io.IOException;
 
@@ -7,14 +7,14 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.protocol.HttpContext;
 
-public class DeleteHttpRequestHandler extends BaseHttpRequestHandler
+public class PatchHttpRequestHandler extends BaseHttpRequestHandler
 {
 
 	@Override
 	public void handle ( HttpRequest request, HttpResponse response, HttpContext context ) throws HttpException,
 			IOException
 	{
-		if (request.getRequestLine().getMethod().equals("DELETE")) response.setStatusCode(204);
+		if (request.getRequestLine().getMethod().equals("PATCH")) response.setStatusCode(204);
 		else response.setStatusCode(500);
 	}
 

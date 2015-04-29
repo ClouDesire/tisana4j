@@ -1,13 +1,13 @@
-package com.cloudesire.tisana4j.test;
+package com.cloudesire.tisana4j.test.handlers;
+
+import java.io.IOException;
 
 import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.protocol.HttpContext;
 
-import java.io.IOException;
-
-public class GetHttpRequestHandler extends BaseHttpRequestHandler
+public class GetCollectionHttpRequestHandler extends BaseHttpRequestHandler
 {
 
 	@Override
@@ -17,13 +17,13 @@ public class GetHttpRequestHandler extends BaseHttpRequestHandler
 		try
 		{
 			if (!request.getRequestLine().getMethod().equals("GET")) throw new Exception("Not a GET");
-			String[] uriArray = request.getRequestLine().getUri().split("/");
-			String json = "{ \"id\": " + uriArray[2] + " }";
+			String json = "[{ \"id\": 15 }]";
 			setJsonResponseEntity(response, json, 200);
 		} catch (Exception e)
 		{
 			response.setStatusCode(500);
 		}
+
 	}
 
 }
