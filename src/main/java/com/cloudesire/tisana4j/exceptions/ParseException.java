@@ -1,6 +1,6 @@
 package com.cloudesire.tisana4j.exceptions;
 
-public class ParseException extends Exception
+public class ParseException extends RuntimeRestException
 {
 	private static final long serialVersionUID = -1993161072836719569L;
 

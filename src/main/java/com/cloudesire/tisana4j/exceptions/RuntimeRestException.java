@@ -8,4 +8,9 @@ public class RuntimeRestException extends Exception
 	{
 		super(e);
 	}
+
+	public RuntimeRestException ( String message )
+	{
+		super(message);
+	}
 }

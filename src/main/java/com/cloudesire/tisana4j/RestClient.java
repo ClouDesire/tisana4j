@@ -450,7 +450,7 @@ public class RestClient implements RestClientInterface
 			}
 			return readObject(responseClass, response);
 		}
-		catch (URISyntaxException | ParseException e)
+		catch (URISyntaxException e)
 		{
 			throw new RuntimeRestException(e);
 		}
