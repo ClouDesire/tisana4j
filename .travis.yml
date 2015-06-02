@@ -1,8 +1,4 @@
 language: java
-jdk:
-  - openjdk7
-  - oraclejdk7
-  - oraclejdk8
 after_script: "./deploy.sh"
 env:
   global:
