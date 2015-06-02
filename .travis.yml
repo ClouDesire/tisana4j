@@ -1,5 +1,8 @@
 language: java
 after_script: "./deploy.sh"
+branches:
+  only:
+    - master
 env:
   global:
   - secure: a49ipBF3wSvFzpADH/TZaEKMLINJvUZXOWO98wTlVQCuJYTcKWmCeZgLd84RDlT9eimmPdNJt0WEfQ++b8l3BEY4QAVYRi6thBpM0CR1dguGlLcYSyB4sBV8+9MV3F9iHvXTw4jbeJuHani0TQau/ltKhsXod0wd9HxNeBYbaYo=
