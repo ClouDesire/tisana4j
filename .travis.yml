@@ -7,4 +7,4 @@ env:
   - secure: PH4ULTgurwYJPD44bkfuz+NCg0hTrT3T2YQ2S2WM52hq8ssiaVu2XJvFgVBLDhbm9NDzqZJgEXJzsT99RZLRpBgYXSIkqt6VrhV1a6ZdY+mUZCXvCJXhYBGgjWTB67W5lgBVA47fKDteuMTpfHgyi1EzVPN5OlSs17hjThuVCNg=
 before_install:
 - openssl aes-256-cbc -K $encrypted_ba615eb2faa8_key -iv $encrypted_ba615eb2faa8_iv
-  -in private.gpg.enc -out private.gpg -d
+  -in ./.travis/private.gpg.enc -out ./.travis/private.gpg -d
