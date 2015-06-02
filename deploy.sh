@@ -1,2 +1,2 @@
 #!/bin/bash -ex
-mvn deploy --settings .travis/settings.xml
+mvn deploy -Dmaven.test.skip=true --settings .travis/settings.xml
