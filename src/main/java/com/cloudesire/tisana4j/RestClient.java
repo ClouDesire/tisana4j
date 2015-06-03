@@ -753,7 +753,7 @@ public class RestClient implements RestClientInterface
 			if (contentType.getValue().toLowerCase().contains("xml"))
 				return parseXml(clazz, response);
 		}
-		throw new ParseException("Unsupported content type " + contentType != null ? contentType.getValue(): "null");
+		throw new ParseException("Unsupported content type " + (contentType != null ? contentType.getValue(): "null"));
 	}
 
 	private <T> T parseJson ( Class<T> clazz, HttpResponse response ) throws ParseException, RuntimeRestException
