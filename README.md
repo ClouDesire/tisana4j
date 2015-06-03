@@ -24,7 +24,7 @@ Usage
 <dependency>
     <groupId>com.cloudesire</groupId>
     <artifactId>tisana4j</artifactId>
-    <version>0.0.20</version>
+    <version>0.0.21</version>
 </dependency>
 ```
 
