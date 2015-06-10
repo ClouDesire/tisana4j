@@ -45,6 +45,7 @@
 	</scm>
 
 	<properties>
+		<httpclient.version>4.2.6</httpclient.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<gpg.skip>true</gpg.skip>
 	</properties>
@@ -58,26 +59,26 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.2.5</version>
+			<version>${httpclient.version}</version>
 			<classifier>sources</classifier>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.2.5</version>
+			<version>${httpclient.version}</version>
 			<classifier>tests</classifier>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>4.2.5</version>
+			<version>${httpclient.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpmime</artifactId>
-			<version>4.2.5</version>
+			<version>${httpclient.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.woodstox</groupId>
