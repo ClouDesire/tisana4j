@@ -12,8 +12,8 @@ public class RestClientBuilder
     private boolean skipValidation;
     private Map<String, String> headers;
     private SSLContext ctx;
-    private int connectionTimeout = 60000 * 2;
-    private int socketTimeout = 60000 * 2;
+    private Integer connectionTimeout;
+    private Integer socketTimeout;
 
     public RestClientBuilder withUsername(String username)
     {
