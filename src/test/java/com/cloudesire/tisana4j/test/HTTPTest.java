@@ -2,6 +2,7 @@ package com.cloudesire.tisana4j.test;
 
 import com.cloudesire.tisana4j.ExceptionTranslator;
 import com.cloudesire.tisana4j.RestClient;
+import com.cloudesire.tisana4j.RestClientBuilder;
 import com.cloudesire.tisana4j.exceptions.*;
 import com.cloudesire.tisana4j.test.handlers.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,12 +17,14 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLContext;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.Assert.*;
 
@@ -126,6 +129,22 @@ public class HTTPTest
 		serverUrl = "http://" + server.getServiceAddress().getHostName() + ":" + server.getServiceAddress().getPort();
 		log.info("LocalTestServer available at " + serverUrl);
 	}
+
+	@Test
+	public void testBuilder() throws Exception
+	{
+		RestClient newClient = new RestClientBuilder()
+				.withUsername("pippo")
+				.withPassword("pasticcio")
+				.withSkipValidation(true)
+				.withHeaders(new HashMap<String, String>())
+				.withCtx(SSLContext.getInstance("SSL"))
+				.withConnectionTimeout(2, TimeUnit.MINUTES)
+				.withSocketTimeout(1, TimeUnit.MINUTES )
+				.build();
+		assertNotNull(newClient);
+	}
+
 
 	@Test
 	public void testGetData() throws Exception
