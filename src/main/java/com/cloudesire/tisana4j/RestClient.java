@@ -57,6 +57,8 @@ import java.util.concurrent.TimeUnit;
 
 public class RestClient implements RestClientInterface
 {
+	private int CONNECTION_TIMEOUT = 60000 *2;
+	private int SOCKET_TIMEOUT = 60000 *2;
 	private final String username;
 	private final String password;
 	private SSLContext ctx;
@@ -153,6 +155,29 @@ public class RestClient implements RestClientInterface
 	 */
 	public RestClient(String username, String password, boolean skipValidation, Map<String, String> headers, SSLContext ctx)
 	{
+		this(username, password, skipValidation, headers, ctx, null, null);
+
+	}
+	/**
+	 * @param username
+	 *            user for authentication
+	 * @param password
+	 *            password for authentication
+	 * @param skipValidation
+	 *            if true skips server certificate validation for Https
+	 *            connections
+	 * @param headers
+	 *            connection properties that will be added by default to any
+	 *            connection
+	 * @param ctx
+	 *            ssl context
+	 * @param connectionTimeOut
+	 * 			  connection timeout Milliseconds - default 2 minutes
+	 * @param socketTimeOut
+	 *  		  socket timeout Milliseconds - default 2 minutes
+	 */
+	public RestClient(String username, String password, boolean skipValidation, Map<String, String> headers, SSLContext ctx, Integer connectionTimeOut, Integer socketTimeOut)
+	{
 		super();
 		this.username = username;
 		this.password = password;
@@ -160,7 +185,25 @@ public class RestClient implements RestClientInterface
 		authenticated = username != null;
 		this.headers = headers;
 		this.ctx = ctx;
+		if( connectionTimeOut != null ) this.CONNECTION_TIMEOUT = connectionTimeOut;
+		if( socketTimeOut != null ) this.SOCKET_TIMEOUT = socketTimeOut;
 	}
+
+
+	public RestClient(RestClientBuilder builder)
+	{
+		this(
+				builder.getUsername(),
+				builder.getPassword(),
+				builder.getSkipValidation(),
+				builder.getHeaders(),
+				builder.getCtx(),
+				builder.getConnectionTimeout(),
+				builder.getSocketTimeout()
+		);
+	}
+
+
 
 	@Override
 	public void delete ( URL url ) throws RestException, RuntimeRestException
@@ -692,8 +735,8 @@ public class RestClient implements RestClientInterface
 			cm.closeIdleConnections(1, TimeUnit.SECONDS);
 			httpClient = new DefaultHttpClient(cm);
 			HttpParams params = httpClient.getParams();
-			params.setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, 60000);
-			params.setIntParameter(CoreConnectionPNames.SO_TIMEOUT, 60000);
+			params.setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, CONNECTION_TIMEOUT);
+			params.setIntParameter(CoreConnectionPNames.SO_TIMEOUT, SOCKET_TIMEOUT);
 			if (this.skipValidation || this.ctx != null)
 			{
 				SSLSocketFactory sf;
