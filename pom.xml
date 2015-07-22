@@ -38,7 +38,7 @@
 	</developers>
 
 	<scm>
-		<connection>scm:git:https://github.com/ClouDesire/tisana4j.git</connection>
+		<connection>scm:git:ssh://git@github.com/ClouDesire/tisana4j.git</connection>
 		<developerConnection>scm:git:ssh://git@github.com/ClouDesire/tisana4j.git</developerConnection>
 		<url>https://github.com/ClouDesire/tisana4j</url>
 		<tag>HEAD</tag>
