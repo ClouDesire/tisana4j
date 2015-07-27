@@ -3,7 +3,6 @@ package com.cloudesire.tisana4j;
 
 import com.cloudesire.tisana4j.ExceptionTranslator.ResponseMessage;
 import com.cloudesire.tisana4j.exceptions.*;
-import com.fasterxml.jackson.core.Base64Variants;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -12,6 +11,8 @@ import org.apache.http.Header;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthenticationException;
+import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -22,6 +23,7 @@ import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.InputStreamBody;
+import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.conn.PoolingClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
@@ -852,10 +854,15 @@ public class RestClient implements RestClientInterface
 		applyHeaders(request, newHeaders);
 		if (authenticated)
 		{
-			String authorization = "Basic";
-			String encoded = Base64Variants.MIME_NO_LINEFEEDS.encode((username + ":" + password).getBytes());
-			authorization = "Basic " + encoded;
-			request.addHeader("Authorization", authorization);
+			UsernamePasswordCredentials credentials = new UsernamePasswordCredentials(username, password);
+			try
+			{
+				request.addHeader( new BasicScheme().authenticate( credentials, request, null ) );
+			}
+			catch ( AuthenticationException e )
+			{
+				log.warn( "it should not happens", e );
+			}
 		}
 	}
 
