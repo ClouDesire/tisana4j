@@ -10,7 +10,7 @@ import org.apache.http.Header;
  */
 public interface ExceptionTranslator
 {
-	public static class ResponseMessage
+	class ResponseMessage
 	{
 		private String response = null;
 
