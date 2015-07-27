@@ -244,7 +244,7 @@ public class RestClient implements RestClientInterface
 		{
 			throw new RuntimeRestException(e);
 		}
-		setupMethod(delete, newHeaders);
+		prepareRequest( delete, newHeaders );
 		HttpResponse response = execute(delete);
 		parseResponseHeaders( response );
 		EntityUtils.consumeQuietly(response.getEntity());
@@ -277,7 +277,7 @@ public class RestClient implements RestClientInterface
 		try
 		{
 			HttpGet get = new HttpGet(url.toURI());
-			setupMethod(get, headers);
+			prepareRequest( get, headers );
 			HttpResponse response = execute(get);
 			return response;
 		}
@@ -312,7 +312,7 @@ public class RestClient implements RestClientInterface
 		try
 		{
 			HttpGet get = new HttpGet(url.toURI());
-			setupMethod(get, newHeaders);
+			prepareRequest( get, newHeaders );
 			HttpResponse response = execute(get);
 			parseResponseHeaders( response );
 			try (InputStream stream = response.getEntity().getContent())
@@ -339,7 +339,7 @@ public class RestClient implements RestClientInterface
 		try
 		{
 			HttpHead head = new HttpHead(url.toURI());
-			setupMethod(head, newHeaders);
+			prepareRequest( head, newHeaders );
 			HttpResponse response = execute(head);
 			EntityUtils.consumeQuietly(response.getEntity());
 
@@ -373,7 +373,7 @@ public class RestClient implements RestClientInterface
 		{
 			throw new RuntimeRestException(e);
 		}
-		setupMethod(options, newHeaders);
+		prepareRequest( options, newHeaders );
 		HttpResponse response = execute(options);
 		EntityUtils.consumeQuietly(response.getEntity());
 		String allow = null;
@@ -421,7 +421,7 @@ public class RestClient implements RestClientInterface
 		{
 			HttpPatch patch = new HttpPatch(url.toURI());
 
-			setupMethod(patch, newHeaders);
+			prepareRequest( patch, newHeaders );
 			writeObject(paramMap, patch);
 			return readObject(clazz, execute(patch));
 		} catch (URISyntaxException | ParseException e)
@@ -444,7 +444,7 @@ public class RestClient implements RestClientInterface
 		{
 			HttpPatch patch = new HttpPatch(url.toURI());
 
-			setupMethod(patch, newHeaders);
+			prepareRequest( patch, newHeaders );
 			writeObject(paramMap, patch);
 			HttpResponse response = execute(patch);
 			parseResponseHeaders( response );
@@ -476,7 +476,7 @@ public class RestClient implements RestClientInterface
 		{
 			HttpPost post = new HttpPost(url.toURI());
 
-			setupMethod(post, newHeaders);
+			prepareRequest( post, newHeaders );
 			if (obj != null) writeObject(obj, post);
 			HttpResponse response = execute(post);
 
@@ -514,7 +514,7 @@ public class RestClient implements RestClientInterface
 		{
 			HttpPost post = new HttpPost(url.toURI());
 
-			setupMethod(post, newHeaders);
+			prepareRequest( post, newHeaders );
 			MultipartEntity entity = new MultipartEntity();
 
 			InputStreamBody body = new InputStreamBody(content, filename);
@@ -542,7 +542,7 @@ public class RestClient implements RestClientInterface
 		try
 		{
 			HttpPost post = new HttpPost(url.toURI());
-			setupMethod(post, null);
+			prepareRequest( post, null );
 			UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formData, "UTF-8");
 			post.setEntity(entity);
 			HttpResponse response = execute(post);
@@ -580,7 +580,7 @@ public class RestClient implements RestClientInterface
 		try
 		{
 			HttpPut put = new HttpPut(url.toURI());
-			setupMethod(put, newHeaders);
+			prepareRequest( put, newHeaders );
 			if( obj!=null ) writeObject(obj, put);
 			HttpResponse response = execute(put);
 			if (response.getEntity() == null)
@@ -847,7 +847,7 @@ public class RestClient implements RestClientInterface
 	}
 	private final static Object jaxbGuard = new Object();
 
-	private void setupMethod ( HttpRequest request, Map<String, String> newHeaders )
+	private void prepareRequest( HttpRequest request, Map<String, String> newHeaders )
 	{
 		applyHeaders(request, newHeaders);
 		if (authenticated)
@@ -906,7 +906,7 @@ public class RestClient implements RestClientInterface
 			log.debug("Sending GET to " + url + " to retrieve CSV file");
 			HttpGet get;
 			get = new HttpGet(url.toURI());
-			setupMethod(get, newHeaders);
+			prepareRequest( get, newHeaders );
 			HttpResponse response = execute(get);
 			return response.getEntity().getContent();
 		}
