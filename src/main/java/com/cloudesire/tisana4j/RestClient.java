@@ -874,11 +874,11 @@ public class RestClient implements RestClientInterface
 			{
 				request.addHeader("Content-type", "application/json");
 				ObjectWriter writer = mapper.writer();
-				String payload = writer.writeValueAsString(obj);
-				StringEntity entity = new StringEntity(payload);
+				String payload = writer.writeValueAsString( obj );
+				StringEntity entity = new StringEntity( payload, ContentType.APPLICATION_JSON );
 				log.debug("Payload:\n " + payload);
 				request.setEntity(entity);
-			} catch ( JsonProcessingException | UnsupportedEncodingException e)
+			} catch ( JsonProcessingException e )
 			{
 				throw new ParseException(e);
 			}
@@ -894,11 +894,11 @@ public class RestClient implements RestClientInterface
 				Marshaller m = context.createMarshaller();
 				m.marshal(obj, baos);
 				String payload = baos.toString();
-				StringEntity entity = new StringEntity(payload);
+				StringEntity entity = new StringEntity( payload, ContentType.APPLICATION_XML );
 				log.debug("Payload:\n " + payload);
 				request.setEntity(entity);
 			}
-			catch (JAXBException | UnsupportedEncodingException e)
+			catch ( JAXBException e )
 			{
 				throw new ParseException(e);
 			}
