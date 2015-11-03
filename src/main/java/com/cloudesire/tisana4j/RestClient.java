@@ -447,7 +447,7 @@ public class RestClient implements RestClientInterface
 			HttpPatch patch = new HttpPatch(url.toURI());
 
 			prepareRequest( patch, newHeaders );
-			writeObject(paramMap, patch);
+			writeObject( paramMap, patch );
 			HttpResponse response = execute(patch);
 			parseResponseHeaders( response );
 			EntityUtils.consumeQuietly(response.getEntity());
@@ -479,7 +479,7 @@ public class RestClient implements RestClientInterface
 			HttpPost post = new HttpPost(url.toURI());
 
 			prepareRequest( post, newHeaders );
-			if (obj != null) writeObject(obj, post);
+			writeObject( obj, post );
 			HttpResponse response = execute(post);
 
 			if (response.getEntity() == null)
@@ -583,7 +583,7 @@ public class RestClient implements RestClientInterface
 		{
 			HttpPut put = new HttpPut(url.toURI());
 			prepareRequest( put, newHeaders );
-			if( obj!=null ) writeObject(obj, put);
+			writeObject( obj, put );
 			HttpResponse response = execute(put);
 			if (response.getEntity() == null)
 			{
@@ -868,42 +868,49 @@ public class RestClient implements RestClientInterface
 
 	private <T> void writeObject ( T obj, HttpEntityEnclosingRequest request ) throws ParseException
 	{
-		if (!useXml)
-		{
-			try
-			{
-				request.addHeader("Content-type", "application/json");
-				ObjectWriter writer = mapper.writer();
-				String payload = writer.writeValueAsString( obj );
-				StringEntity entity = new StringEntity( payload, ContentType.APPLICATION_JSON );
-				log.debug("Payload:\n " + payload);
-				request.setEntity(entity);
-			} catch ( JsonProcessingException e )
-			{
-				throw new ParseException(e);
-			}
-		}
-		else
-		{
-			request.addHeader("Content-type", "application/xml");
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			JAXBContext context;
-			try
-			{
-				context = JAXBContext.newInstance(obj.getClass());
-				Marshaller m = context.createMarshaller();
-				m.marshal(obj, baos);
-				String payload = baos.toString();
-				StringEntity entity = new StringEntity( payload, ContentType.APPLICATION_XML );
-				log.debug("Payload:\n " + payload);
-				request.setEntity(entity);
-			}
-			catch ( JAXBException e )
-			{
-				throw new ParseException(e);
-			}
-		}
+		if ( obj == null ) return;
+		String payload = useXml ? serializeXMLContent( obj, request ) : serializeJsonContent( obj, request );
+        HttpRequestBase httpRequest = (HttpRequestBase) request;
+        log.debug( "{} payload: {}", httpRequest.getMethod(), payload );
 	}
+
+    private <T> String serializeJsonContent( T obj, HttpEntityEnclosingRequest request ) throws ParseException
+    {
+        try
+        {
+            request.addHeader( "Content-type", "application/json" );
+            ObjectWriter writer = mapper.writer();
+            String payload = writer.writeValueAsString( obj );
+            StringEntity entity = new StringEntity( payload, ContentType.APPLICATION_JSON );
+            request.setEntity(entity);
+            return payload;
+        } catch ( JsonProcessingException e )
+        {
+            throw new ParseException(e);
+        }
+    }
+
+    private <T> String serializeXMLContent( T obj, HttpEntityEnclosingRequest request ) throws ParseException
+    {
+        request.addHeader( "Content-type", "application/xml" );
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        JAXBContext context;
+        try
+        {
+            context = JAXBContext.newInstance(obj.getClass());
+            Marshaller m = context.createMarshaller();
+            m.marshal(obj, baos);
+            String payload = baos.toString();
+            StringEntity entity = new StringEntity( payload, ContentType.APPLICATION_XML );
+            request.setEntity(entity);
+            return payload;
+        }
+        catch ( JAXBException e )
+        {
+            throw new ParseException(e);
+        }
+    }
+
 
 	@Override
 	public InputStream getData ( URL url, Map<String, String> newHeaders ) throws RuntimeRestException, RestException
