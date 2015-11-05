@@ -275,7 +275,6 @@ public class RestClient implements RestClientInterface
 
 	private HttpResponse getInternal ( URL url, Map<String, String> headers ) throws RuntimeRestException, RestException
 	{
-		log.debug("Sending GET to " + url);
 		try
 		{
 			HttpGet get = new HttpGet(url.toURI());
