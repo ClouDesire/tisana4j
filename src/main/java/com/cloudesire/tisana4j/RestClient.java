@@ -262,7 +262,6 @@ public class RestClient implements RestClientInterface
 	public <T> T get ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws RuntimeRestException,
 			RestException
 	{
-		log.debug("Sending GET to " + url);
 		try
 		{
 			HttpResponse response = getInternal(url, newHeaders);
@@ -916,7 +915,6 @@ public class RestClient implements RestClientInterface
 	{
 		try
 		{
-			log.debug("Sending GET to " + url + " to retrieve CSV file");
 			HttpGet get;
 			get = new HttpGet(url.toURI());
 			prepareRequest( get, newHeaders );
