@@ -4,22 +4,20 @@ import com.cloudesire.tisana4j.ExceptionTranslator;
 import com.cloudesire.tisana4j.RestClient;
 import com.cloudesire.tisana4j.RestClientBuilder;
 import com.cloudesire.tisana4j.exceptions.*;
-import com.cloudesire.tisana4j.test.handlers.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.squareup.okhttp.mockwebserver.MockResponse;
+import com.squareup.okhttp.mockwebserver.MockWebServer;
+import com.squareup.okhttp.mockwebserver.RecordedRequest;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
-import org.apache.http.localserver.LocalTestServer;
-import org.apache.http.protocol.HttpRequestHandler;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
 import java.io.InputStream;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -97,37 +95,16 @@ public class HTTPTest
 
 	}
 
-	private LocalTestServer server = null;
-	private String serverUrl;
-	private final static Logger log = LoggerFactory.getLogger(HTTPTest.class);
+	private MockWebServer server;
+    private final static Logger log = LoggerFactory.getLogger(HTTPTest.class);
 
-	private final HttpRequestHandler csvHttpRequest = new GetCsvHttpRequestHandler();
-	private final HttpRequestHandler deleteHandler = new DeleteHttpRequestHandler();
-	private final HttpRequestHandler getHandler = new GetHttpRequestHandler();
-	private final HttpRequestHandler getCollectionHandler = new GetCollectionHttpRequestHandler();
-	private final HttpRequestHandler postHandler = new PostHttpRequestHandler();
-	private final HttpRequestHandler putHandler = new PutHttpRequestHandler();
-	private final HttpRequestHandler patchHandler = new PatchHttpRequestHandler();
-	private final HttpRequestHandler serverErrorHandler = new ServerErrorHandler();
 	private final RestClient client = new RestClient(true);
+	private String serverUrl = "";
 
 	@Before
 	public void setUp () throws Exception
 	{
-		server = new LocalTestServer(null, null);
-		server.register("/delete/*", deleteHandler);
-		server.register("/resource/*", getHandler);
-		server.register("/resources/*", getCollectionHandler);
-		server.register("/create/*", postHandler);
-		server.register("/update/*", putHandler);
-		server.register("/get/csv", csvHttpRequest);
-		server.register("/patch/*", patchHandler);
-		server.register("/fail/*", serverErrorHandler);
-		server.start();
-
-		// report how to access the server
-		serverUrl = "http://" + server.getServiceAddress().getHostName() + ":" + server.getServiceAddress().getPort();
-		log.info("LocalTestServer available at " + serverUrl);
+		server = new MockWebServer();
 	}
 
 	@Test
@@ -149,7 +126,15 @@ public class HTTPTest
 	@Test
 	public void testGetData() throws Exception
 	{
-		InputStream stream = client.getData(new URL(serverUrl+"/get/csv"), null);
+		String data = "ColumnA,ColumnB,ColumnC\r\nA,B,c\r\n,a,b,c\r\n";
+		MockResponse response = new MockResponse();
+		response.setResponseCode(200);
+		response.addHeader("Content-Type", "text/csv");
+		response.setBody(data);
+		server.enqueue(response);
+		server.start(9999);
+
+		InputStream stream = client.getData(server.getUrl("/get/csv"), null);
 		byte[] b = new byte[1024];
 		int r = stream.read(b);
 		assertTrue(r > 0 );
@@ -161,35 +146,81 @@ public class HTTPTest
 	@Test
 	public void testDelete () throws Exception
 	{
-		client.delete(new URL(serverUrl + "/delete/15"));
+		MockResponse response = new MockResponse();
+		response.setResponseCode(204);
+		server.enqueue(response);
+		server.start(9999);
+
+		client.delete(server.getUrl("/delete/15"));
+
+		RecordedRequest request = server.takeRequest();
+		assertEquals("/delete/15", request.getPath());
+		assertEquals("DELETE", request.getMethod());
 	}
 
 	@Test
-	@Ignore
-	// not supported by Apache LocalTestServer
 	public void testPatch () throws Exception
 	{
+		MockResponse response = new MockResponse();
+		response.setResponseCode(204);
+		server.enqueue(response);
+		server.start(9999);
+
 		Map<String, String> map = new HashMap<>();
 		map.put("action", "doThings");
-		client.patch(new URL(serverUrl + "/patch/15"), map);
+
+		client.patch(server.getUrl("/patch/15"), map);
+
+		RecordedRequest request = server.takeRequest();
+		assertEquals("/patch/15", request.getPath());
+		assertEquals("PATCH", request.getMethod());
+		assertTrue(request.getBody().size() > 0);
 	}
 
 	@Test
 	public void testGet () throws Exception
 	{
 		final int resourceId = 15;
-		Resource response = client.get(new URL(serverUrl + "/resource/" + resourceId), Resource.class);
-		assertNotNull(response.getId());
-		assertTrue(response.getId().equals(resourceId));
+		String json = "{ \"id\": " + resourceId + " }";
+
+		MockResponse response = new MockResponse();
+		response.setResponseCode(200);
+		response.addHeader("Content-Type", "application/json");
+		response.setBody(json);
+		server.enqueue(response);
+		server.start(9999);
+
+		Resource resource = client.get(server.getUrl("/resource/" + resourceId), Resource.class);
+
+		RecordedRequest request = server.takeRequest();
+		assertEquals("/resource/" + resourceId, request.getPath());
+		assertEquals("GET", request.getMethod());
+		assertEquals(0, request.getBody().size());
+		assertNotNull(resource.getId());
+		assertTrue(resource.getId().equals(resourceId));
 	}
 
 	@Test
 	public void testGetRaw () throws Exception
 	{
 		final int resourceId = 15;
-		InputStream response = client.get(new URL(serverUrl + "/resource/" + resourceId));
+		String json = "{ \"id\": " + resourceId + " }";
+
+		MockResponse response = new MockResponse();
+		response.setResponseCode(200);
+		response.addHeader("Content-Type", "application/json");
+		response.setBody(json);
+		server.enqueue(response);
+		server.start(9999);
+
+		InputStream inputStream = client.get(server.getUrl("/resource/" + resourceId));
+
+		RecordedRequest request = server.takeRequest();
+		assertEquals("/resource/" + resourceId, request.getPath());
+		assertEquals("GET", request.getMethod());
+		assertEquals(0, request.getBody().size());
 		assertNotNull(response);
-		String s = IOUtils.toString(response, StandardCharsets.UTF_8.toString());
+		String s = IOUtils.toString(inputStream, StandardCharsets.UTF_8.toString());
 		assertNotNull(s);
 		assertEquals("{ \"id\": 15 }", s);
 	}
@@ -197,61 +228,126 @@ public class HTTPTest
 	@Test
 	public void testGetCollection () throws Exception
 	{
-		List<Resource> collection = client.getCollection(new URL(serverUrl + "/resources/"), Resource.class);
+		String json = "[{ \"id\": 15 }]";
+
+		MockResponse response = new MockResponse();
+		response.setResponseCode(200);
+		response.addHeader("Content-Type", "application/json");
+		response.setBody(json);
+		server.enqueue(response);
+		server.start(9999);
+
+		List<Resource> collection = client.getCollection(server.getUrl("/resources"), Resource.class);
+
+		RecordedRequest request = server.takeRequest();
+		assertEquals("/resources", request.getPath());
+		assertEquals("GET", request.getMethod());
+		assertEquals(0, request.getBody().size());
 		assertFalse(collection.isEmpty());
-		assertNotNull(collection.get(0));
+		assertEquals("15", collection.get(0).id.toString());
 	}
 
 	@Test
 	public void testPost () throws Exception
 	{
 		final int resourceId = 15;
+		String json = "{ \"id\": " + resourceId + " }";
+
+		MockResponse response = new MockResponse();
+		response.setResponseCode(201);
+		response.addHeader("Content-Type", "application/json");
+		response.setBody(json);
+		server.enqueue(response);
+		server.start(9999);
+
 		Resource resource = new Resource();
 		resource.setId(resourceId);
-		Resource response = client.post(new URL(serverUrl + "/create/"), resource);
-		assertNotNull(response.getId());
-		assertTrue(response.getId().equals(resourceId));
+		Resource postResponse = client.post(server.getUrl("/create"), resource);
+
+		RecordedRequest request = server.takeRequest();
+		assertEquals("/create", request.getPath());
+		assertEquals("POST", request.getMethod());
+		assertTrue(request.getBody().size() > 0);
+		assertNotNull(postResponse.getId());
+		assertEquals(resourceId, postResponse.getId().intValue());
 	}
 
 	@Test
 	public void testEmptyPostEmptyResponse () throws Exception
 	{
-		Resource response = client.post(new URL(serverUrl + "/create/"), null, null, null);
-		assertNull(response);
+		MockResponse response = new MockResponse();
+		response.setResponseCode(201);
+		server.enqueue(response);
+		server.start(9999);
+
+		Resource postResponse = client.post(server.getUrl("/create"), null, null, null);
+		RecordedRequest request = server.takeRequest();
+		assertEquals(0, request.getBody().size());
+		assertEquals("/create", request.getPath());
+		assertEquals("POST", request.getMethod());
+		assertNull(postResponse);
 	}
 
 	@Test
 	public void testPut () throws Exception
 	{
 		final int resourceId = 15;
+		String json = "{ \"id\": " + resourceId + " }";
+
+		MockResponse response = new MockResponse();
+		response.setResponseCode(200);
+		response.addHeader("Content-Type", "application/json");
+		response.setBody(json);
+		server.enqueue(response);
+		server.start(9999);
+
 		Resource resource = new Resource();
 		resource.setId(resourceId);
-		Resource response = client.put(new URL(serverUrl + "/update/" + resourceId), resource);
-		assertNotNull(response.getId());
-		assertTrue(response.getId().equals(resourceId));
+		Resource putResponse = client.put(server.getUrl("/update/" + resourceId), resource);
+
+		RecordedRequest request = server.takeRequest();
+		assertTrue(request.getBody().size() > 0);
+		assertEquals("/update/" + resourceId, request.getPath());
+		assertEquals("PUT", request.getMethod());
+		assertNotNull(putResponse.getId());
+		assertTrue(putResponse.getId().equals(resourceId));
 	}
 
 	@Test
 	public void testInternalServerError () throws Exception
 	{
+        String json = "{ \"error\": \"Customized Internal Server Error\" }";
+
+        MockResponse response = new MockResponse();
+        response.setResponseCode(500);
+        response.addHeader("Content-Type", "application/json");
+        response.setBody(json);
+        server.enqueue(response);
+        server.start(9999);
+
 		try
 		{
-			client.get(new URL(serverUrl + "/fail/500"), Resource.class);
+			client.get(server.getUrl("/fail/500"), Resource.class);
 			fail();
 		} catch (Exception e)
 		{
 			if (!(e instanceof InternalServerErrorException)) fail();
 			RestException re = (RestException) e;
-			assertEquals(500,re.getResponseCode());
-			assertEquals("{ \"error\": \"Customized Internal Server Error\" }",re.getMessage());
+			assertEquals(500, re.getResponseCode());
+			assertEquals("{ \"error\": \"Customized Internal Server Error\" }", re.getMessage());
 		}
 	}
 	@Test
 	public void testBadRequestError () throws Exception
 	{
+        MockResponse response = new MockResponse();
+        response.setResponseCode(400);
+        server.enqueue(response);
+        server.start(9999);
+
 		try
 		{
-			client.get(new URL(serverUrl + "/fail/400"), Resource.class);
+			client.get(server.getUrl("/fail/400"), Resource.class);
 			fail();
 		} catch (Exception e)
 		{
@@ -259,11 +355,16 @@ public class HTTPTest
 		}
 	}
 	@Test
-	public void testAccesDeniedError () throws Exception
+	public void testAccessDeniedError () throws Exception
 	{
+        MockResponse response = new MockResponse();
+        response.setResponseCode(403);
+        server.enqueue(response);
+        server.start(9999);
+
 		try
 		{
-			client.get(new URL(serverUrl + "/fail/403"), Resource.class);
+			client.get(server.getUrl("/fail/403"), Resource.class);
 			fail();
 		} catch (Exception e)
 		{
@@ -273,9 +374,14 @@ public class HTTPTest
 	@Test
 	public void testResourceNotFoundError () throws Exception
 	{
+        MockResponse response = new MockResponse();
+        response.setResponseCode(404);
+        server.enqueue(response);
+        server.start(9999);
+
 		try
 		{
-			client.get(new URL(serverUrl + "/fail/404"), Resource.class);
+			client.get(server.getUrl("/fail/404"), Resource.class);
 			fail();
 		} catch (Exception e)
 		{
@@ -285,9 +391,14 @@ public class HTTPTest
 	@Test
 	public void testUnprocessableEntityError () throws Exception
 	{
+        MockResponse response = new MockResponse();
+        response.setResponseCode(422);
+        server.enqueue(response);
+        server.start(9999);
+
 		try
 		{
-			client.get(new URL(serverUrl + "/fail/422"), Resource.class);
+			client.get(server.getUrl("/fail/422"), Resource.class);
 			fail();
 		} catch (Exception e)
 		{
@@ -298,12 +409,21 @@ public class HTTPTest
 	@Test
 	public void testTranslateError () throws Exception
 	{
+        String json = "{ \"error\": \"Customized Internal Server Error\" }";
+
+        MockResponse response = new MockResponse();
+        response.setResponseCode(500);
+        response.addHeader("Content-Type", "application/json");
+        response.setBody(json);
+        server.enqueue(response);
+        server.start(9999);
+
 		RestClient client2 = new RestClient(true);
 		client2.setExceptionTranslator(new TestExceptionTranslator());
 
 		try
 		{
-			client2.get(new URL(serverUrl + "/fail/500"), Resource.class);
+			client2.get(server.getUrl("/fail/500"), Resource.class);
 			fail();
 		} catch (Exception e)
 		{
@@ -317,11 +437,20 @@ public class HTTPTest
 	@Test
 	public void testTranslateError2 () throws Exception
 	{
+        String json = "{ \"error\": \"Customized Bad Request\" }";
+
+        MockResponse response = new MockResponse();
+        response.setResponseCode(400);
+        response.addHeader("Content-Type", "application/json");
+        response.setBody(json);
+        server.enqueue(response);
+        server.start(9999);
+
 		RestClient client2 = new RestClient(true);
 		client2.setExceptionTranslator(new TestExceptionTranslator());
 		try
 		{
-			client2.get(new URL(serverUrl + "/fail/400"), Resource.class);
+			client2.get(server.getUrl("/fail/400"), Resource.class);
 			fail();
 		} catch (Exception e)
 		{
@@ -335,7 +464,12 @@ public class HTTPTest
 	@After
 	public void tearDown () throws Exception
 	{
-		server.stop();
-	}
+        try
+        {
+            server.shutdown();
+        }catch (IllegalStateException e) {
+            log.info("Mock server not started");
+        }
+    }
 
 }

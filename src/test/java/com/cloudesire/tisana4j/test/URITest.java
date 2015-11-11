@@ -5,9 +5,6 @@ import org.junit.Test;
 
 import java.net.URI;
 
-/**
- * Created by gionn on 16/02/15.
- */
 public class URITest
 {
 	@Test
