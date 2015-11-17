@@ -87,12 +87,12 @@ public class RestClientBuilder
         return ctx;
     }
 
-    public int getConnectionTimeout()
+    public Integer getConnectionTimeout()
     {
         return connectionTimeout;
     }
 
-    public int getSocketTimeout()
+    public Integer getSocketTimeout()
     {
         return socketTimeout;
     }
