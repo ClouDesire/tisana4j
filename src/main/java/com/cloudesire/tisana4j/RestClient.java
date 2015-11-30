@@ -17,6 +17,7 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.*;
+import org.apache.http.client.utils.DateUtils;
 import org.apache.http.conn.scheme.Scheme;
 import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.apache.http.entity.ContentType;
@@ -724,6 +725,10 @@ public class RestClient implements RestClientInterface
 		catch (KeyManagementException |  NoSuchAlgorithmException | IOException e)
 		{
 			throw new RuntimeRestException(e);
+		}finally
+		{
+			// https://issues.apache.org/jira/browse/HTTPCLIENT-1523
+			DateUtils.clearThreadLocal();
 		}
 	}
 
