@@ -1,8 +1,17 @@
 package com.cloudesire.tisana4j;
 
-
 import com.cloudesire.tisana4j.ExceptionTranslator.ResponseMessage;
-import com.cloudesire.tisana4j.exceptions.*;
+import com.cloudesire.tisana4j.exceptions.AccessDeniedException;
+import com.cloudesire.tisana4j.exceptions.BadRequestException;
+import com.cloudesire.tisana4j.exceptions.ConflictException;
+import com.cloudesire.tisana4j.exceptions.DefaultExceptionTranslator;
+import com.cloudesire.tisana4j.exceptions.InternalServerErrorException;
+import com.cloudesire.tisana4j.exceptions.ParseException;
+import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
+import com.cloudesire.tisana4j.exceptions.RestException;
+import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
+import com.cloudesire.tisana4j.exceptions.UnauthorizedException;
+import com.cloudesire.tisana4j.exceptions.UnprocessableEntityException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -15,28 +24,35 @@ import org.apache.http.auth.AuthenticationException;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.*;
+import org.apache.http.client.methods.HttpDelete;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpHead;
+import org.apache.http.client.methods.HttpOptions;
+import org.apache.http.client.methods.HttpPatch;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.methods.HttpRequestBase;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.DateUtils;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.ssl.SSLSocketFactory;
+import org.apache.http.config.SocketConfig;
+import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntity;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.impl.auth.BasicScheme;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.impl.conn.PoolingClientConnectionManager;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.params.CoreConnectionPNames;
-import org.apache.http.params.HttpParams;
+import org.apache.http.ssl.SSLContextBuilder;
+import org.apache.http.ssl.TrustStrategy;
 import org.apache.http.util.EntityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -48,15 +64,14 @@ import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.KeyManagementException;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 public class RestClient implements RestClientInterface
 {
@@ -736,56 +751,51 @@ public class RestClient implements RestClientInterface
 	{
 		if (httpClient == null)
 		{
-			PoolingClientConnectionManager cm = new PoolingClientConnectionManager();
-			cm.closeIdleConnections(1, TimeUnit.SECONDS);
-			httpClient = new DefaultHttpClient(cm);
-			HttpParams params = httpClient.getParams();
-			params.setIntParameter(CoreConnectionPNames.CONNECTION_TIMEOUT, CONNECTION_TIMEOUT);
-			params.setIntParameter(CoreConnectionPNames.SO_TIMEOUT, SOCKET_TIMEOUT);
-			if (this.skipValidation || this.ctx != null)
-			{
-				SSLSocketFactory sf;
-				if (this.skipValidation)
-				{
-					log.warn("Configuring HTTPS with no validation!");
-					sf = new SSLSocketFactory(getSSLContext(), SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-				} else sf =   new SSLSocketFactory(getSSLContext());
+			HttpClientBuilder httpClientBuilder = HttpClients.custom();
 
-				Scheme https = new Scheme("https", 443, sf);
-				httpClient.getConnectionManager().getSchemeRegistry().register(https);
+			RequestConfig requestConfig = RequestConfig.custom()
+					.setConnectionRequestTimeout( CONNECTION_TIMEOUT )
+					.setSocketTimeout( SOCKET_TIMEOUT )
+					.build();
+
+			SocketConfig socketConfig = SocketConfig.custom()
+					.setSoKeepAlive( true )
+					.setSoTimeout( SOCKET_TIMEOUT )
+					.build();
+
+			httpClientBuilder.setDefaultRequestConfig( requestConfig )
+					.setDefaultSocketConfig( socketConfig );
+
+			if ( skipValidation )
+			{
+				try
+				{
+					SSLContext sslContext = SSLContextBuilder.create()
+							.loadTrustMaterial( new TrustStrategy()
+							{
+								@Override
+								public boolean isTrusted( X509Certificate[] chain, String authType )
+										throws CertificateException
+								{
+									return true;
+								}
+							} ).build();
+
+					httpClientBuilder.setSslcontext( sslContext );
+
+					httpClientBuilder.setSSLHostnameVerifier( NoopHostnameVerifier.INSTANCE );
+				}
+				catch ( KeyStoreException e )
+				{
+					log.warn("Cannot setup skipValidation", e);
+				}
+
 			}
+
+			httpClient = httpClientBuilder.build();
 		}
 
 		return httpClient;
-	}
-
-	private SSLContext getSSLContext () throws NoSuchAlgorithmException, KeyManagementException
-	{
-		if (ctx != null) return ctx;
-		log.trace("Creating SSL context with no certificate validation");
-		ctx = SSLContext.getInstance("SSL");
-		TrustManager tm = new X509TrustManager()
-		{
-			@Override
-			public void checkClientTrusted ( X509Certificate[] arg0, String arg1 ) throws CertificateException
-			{
-
-			}
-
-			@Override
-			public void checkServerTrusted ( X509Certificate[] arg0, String arg1 ) throws CertificateException
-			{
-
-			}
-
-			@Override
-			public X509Certificate[] getAcceptedIssuers ()
-			{
-				return null;
-			}
-		};
-		ctx.init(null, new TrustManager[] { tm }, new SecureRandom());
-		return ctx;
 	}
 
 	private <T> T readObject ( Class<T> clazz, HttpResponse response ) throws ParseException, RuntimeRestException
