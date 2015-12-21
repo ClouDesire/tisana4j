@@ -14,6 +14,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
 public class IntegrationTest
@@ -51,7 +52,7 @@ public class IntegrationTest
         InputStream response = client.postFormData( new URL( "https://httpbin.org/post" ), values, InputStream.class );
 
         final JsonNode jsonNode = jsonMapper.readTree( response );
-        assertNotNull( jsonNode.findValue( "form" ) );
+        assertEquals( "value", jsonNode.findValue( "form" ).findValue( "key" ).asText() );
     }
 
 
