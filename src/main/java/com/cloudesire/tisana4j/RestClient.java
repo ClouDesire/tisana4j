@@ -803,6 +803,19 @@ public class RestClient implements RestClientInterface
 		parseResponseHeaders( response );
 		if (response.getEntity() == null)
 			return null;
+
+		if (clazz.isAssignableFrom( InputStream.class ))
+		{
+			try
+			{
+				return (T) response.getEntity().getContent();
+			}
+			catch ( IOException ex )
+			{
+				throw new RuntimeRestException(ex);
+			}
+		}
+
 		Header contentType = response.getEntity().getContentType(); // FIXME needs a test for the following
 		if (contentType != null)
 		{
