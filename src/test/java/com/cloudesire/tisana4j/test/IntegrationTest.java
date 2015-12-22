@@ -3,17 +3,13 @@ package com.cloudesire.tisana4j.test;
 import com.cloudesire.tisana4j.Pair;
 import com.cloudesire.tisana4j.RestClient;
 import com.cloudesire.tisana4j.RestClientFactory;
-import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
 import com.cloudesire.tisana4j.exceptions.RestException;
+import com.cloudesire.tisana4j.test.dto.NetworkAddressDTO;
+import com.cloudesire.tisana4j.test.dto.SlideShowDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -30,11 +26,11 @@ public class IntegrationTest
     private ObjectMapper jsonMapper = new ObjectMapper();
 
     @Test
-    public void test() throws Exception
+    public void testJson() throws Exception
     {
         RestClient client = RestClientFactory.getDefaultClient();
 
-        NetworkAddress testClass = client.get( new URL( "https://httpbin.org/ip" ), NetworkAddress.class );
+        NetworkAddressDTO testClass = client.get( new URL( "https://httpbin.org/ip" ), NetworkAddressDTO.class );
 
         assertNotNull( testClass );
         assertNotNull( testClass.getOrigin() );
@@ -45,13 +41,13 @@ public class IntegrationTest
     {
         RestClient client = RestClientFactory.getDefaultXmlClient();
 
-        final SlideShow response = client.get( new URL( "https://httpbin.org/xml" ), SlideShow.class );
+        final SlideShowDTO response = client.get( new URL( "https://httpbin.org/xml" ), SlideShowDTO.class );
 
         assertNotNull(response.getAuthor());
         assertNotNull(response.getTitle());
         assertNotNull(response.getDate());
         assertNotNull(response.getSlide());
-        for ( Slide slide : response.getSlide() )
+        for ( SlideShowDTO.Slide slide : response.getSlide() )
         {
             assertNotNull( slide.getType() );
             assertNotNull( slide.getTitle() );
@@ -88,136 +84,4 @@ public class IntegrationTest
         assertEquals( "value", jsonNode.findValue( "form" ).findValue( "key" ).asText() );
     }
 
-    @Test ( expected = ResourceNotFoundException.class )
-    public void sniCustomCert() throws IOException, RestException
-    {
-        RestClient client = RestClientFactory.getNoValidationClient();
-        client.get( new URL( "https://ines-gtt-test.liberologico.com/asd" ) );
-    }
-
-    @Test ( expected = ResourceNotFoundException.class )
-    public void testNoSni() throws IOException, RestException
-    {
-        RestClient client = RestClientFactory.getNoValidationClient();
-        client.get( new URL( "https://web001.liberologico.com/asd" ) );
-    }
-
-    @Test
-    public void testCloudFlareSNI() throws IOException, RestException
-    {
-        RestClient client = RestClientFactory.getDefaultClient();
-        client.get( new URL( "https://cloudesire.cloud/" ) );
-    }
-
-    private static class NetworkAddress
-    {
-        private String origin;
-
-        public String getOrigin()
-        {
-            return origin;
-        }
-    }
-
-    @XmlRootElement (name="slideshow")
-    @XmlAccessorType ( XmlAccessType.FIELD )
-    private static class SlideShow
-    {
-        @XmlAttribute
-        private String title;
-        @XmlAttribute
-        private String date;
-        @XmlAttribute
-        private String author;
-        @XmlElement
-        private List<Slide> slide;
-
-        public String getTitle()
-        {
-            return title;
-        }
-
-        public void setTitle( String title )
-        {
-            this.title = title;
-        }
-
-        public String getDate()
-        {
-            return date;
-        }
-
-        public void setDate( String date )
-        {
-            this.date = date;
-        }
-
-        public String getAuthor()
-        {
-            return author;
-        }
-
-        public void setAuthor( String author )
-        {
-            this.author = author;
-        }
-
-        public List<Slide> getSlide()
-        {
-            return slide;
-        }
-
-        public void setSlide( List<Slide> slide )
-        {
-            this.slide = slide;
-        }
-    }
-
-    @XmlAccessorType ( XmlAccessType.FIELD )
-    private static class Slide
-    {
-        @XmlAttribute
-        private String type;
-        @XmlElement
-        private String title;
-        @XmlElement
-        private String item;
-
-        public Slide(){}
-
-        public Slide( String title )
-        {
-            this.title = title;
-        }
-
-        public String getType()
-        {
-            return type;
-        }
-
-        public void setType( String type )
-        {
-            this.type = type;
-        }
-
-        public String getTitle()
-        {
-            return title;
-        }
-
-        public void setTitle( String title )
-        {
-            this.title = title;
-        }
-
-        public String getItem()
-        {
-            return item;
-        }
-
-        public void setItem( String item )
-        {
-            this.item = item;
-        }
-    }
 }
