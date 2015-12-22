@@ -3,7 +3,6 @@ package com.cloudesire.tisana4j;
 import com.cloudesire.tisana4j.exceptions.RestException;
 import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,7 +76,7 @@ public interface RestClientInterface
     <T> T postData( URL url, String filename, InputStream content, Class<T> responseClass,
             Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
 
-    <T> T postFormData( URL url, List<BasicNameValuePair> formData, Class<T> responseClass )
+    <T> T postFormData( URL url, List<Pair> keyValueList, Class<T> responseClass )
             throws RestException, RuntimeRestException;
 
     <T> T put( URL url, T obj ) throws RestException, RuntimeRestException;

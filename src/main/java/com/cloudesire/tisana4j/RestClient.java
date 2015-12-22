@@ -21,6 +21,7 @@ import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.auth.AuthenticationException;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.HttpClient;
@@ -67,6 +68,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -549,13 +551,20 @@ public class RestClient implements RestClientInterface
     }
 
     @Override
-    public <T> T postFormData( URL url, List<BasicNameValuePair> formData, Class<T> responseClass )
+    public <T> T postFormData( URL url, List<Pair> pairs, Class<T> responseClass )
             throws RestException, RuntimeRestException
     {
         try
         {
             HttpPost post = new HttpPost( url.toURI() );
             prepareRequest( post, null );
+
+            List<NameValuePair> formData = new ArrayList<>();
+            for ( Pair pair: pairs )
+            {
+                formData.add( new BasicNameValuePair( pair.getKey(), pair.getValue() ) );
+            }
+
             UrlEncodedFormEntity entity = new UrlEncodedFormEntity( formData, "UTF-8" );
             post.setEntity( entity );
             HttpResponse response = execute( post );

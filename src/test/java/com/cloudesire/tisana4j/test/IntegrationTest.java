@@ -1,12 +1,12 @@
 package com.cloudesire.tisana4j.test;
 
+import com.cloudesire.tisana4j.Pair;
 import com.cloudesire.tisana4j.RestClient;
 import com.cloudesire.tisana4j.RestClientFactory;
 import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
 import com.cloudesire.tisana4j.exceptions.RestException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.http.message.BasicNameValuePair;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -56,8 +56,8 @@ public class IntegrationTest
     public void testPostForm() throws IOException, RestException
     {
         RestClient client = RestClientFactory.getDefaultClient();
-        List<BasicNameValuePair> values = new ArrayList<>();
-        values.add( new BasicNameValuePair( "key", "value" ) );
+        List<Pair> values = new ArrayList<>();
+        values.add( new Pair( "key", "value" ) );
 
         InputStream response = client.postFormData( new URL( "https://httpbin.org/post" ), values, InputStream.class );
 
