@@ -85,6 +85,7 @@ public class RestClient implements RestClientInterface
 	private ExceptionTranslator exceptionTranslator = new DefaultExceptionTranslator();
 	private final ObjectMapper mapper = new ObjectMapper();
 	private final boolean skipValidation;
+	private boolean skipContentCompression = false;
 	private Map<String, String> headers;
 	private Map<String, List<String>> responseHeaders;
 	private HttpClient httpClient;
@@ -766,6 +767,9 @@ public class RestClient implements RestClientInterface
 			httpClientBuilder.setDefaultRequestConfig( requestConfig )
 					.setDefaultSocketConfig( socketConfig );
 
+			if ( skipContentCompression )
+				httpClientBuilder.disableContentCompression();
+
 			if ( skipValidation )
 			{
 				try
@@ -961,4 +965,11 @@ public class RestClient implements RestClientInterface
 		return responseHeaders;
 	}
 
+	public void setSkipContentCompression( boolean skipContentCompression )
+	{
+		if ( httpClient == null )
+			this.skipContentCompression = skipContentCompression;
+		else
+			throw new IllegalArgumentException( "httpClient already initialized, too late to disable compression" );
+	}
 }

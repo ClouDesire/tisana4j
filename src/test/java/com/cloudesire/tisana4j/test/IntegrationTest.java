@@ -14,8 +14,10 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
+import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class IntegrationTest
 {
@@ -40,6 +42,23 @@ public class IntegrationTest
 
         assertNotNull( testClass );
         assertNotNull( testClass.getOrigin() );
+    }
+
+    @Test
+    public void testNoCompression() throws Exception
+    {
+        RestClient defaultClient = RestClientFactory.getDefaultClient();
+        RestClient noCompressionClient = RestClientFactory.getNoCompressionClient();
+
+        InputStream gzippedResponse = defaultClient.get( new URL( "https://httpbin.org/gzip" ), InputStream.class );
+        final JsonNode gzippedJsonNode = jsonMapper.readTree( gzippedResponse );
+        assertTrue( "value", gzippedJsonNode.findValue( "gzipped" ).asBoolean() );
+
+
+        InputStream plainTextResponse = noCompressionClient.get( new URL( "https://httpbin.org/get" ), InputStream.class );
+        final JsonNode plainTextJsonNode = jsonMapper.readTree( plainTextResponse );
+        assertNotNull( "value", plainTextJsonNode.findValue( "headers" ) );
+        assertNull( "value", plainTextJsonNode.findValue( "headers" ).findValue( "Accept-Encoding" ) );
     }
 
     @Test
