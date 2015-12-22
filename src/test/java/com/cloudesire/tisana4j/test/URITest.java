@@ -7,21 +7,21 @@ import java.net.URI;
 
 public class URITest
 {
-	@Test
-	public void JavaURIplusSignReplacementTest () throws Exception
-	{
-		String scheme = "https";
-		String hostname = "localhost";
-		String path = "/resources";
-		String query = "key=vàlue+";
+    @Test
+    public void JavaURIplusSignReplacementTest() throws Exception
+    {
+        String scheme = "https";
+        String hostname = "localhost";
+        String path = "/resources";
+        String query = "key=vàlue+";
 
-		String uri = new URI(scheme, hostname, path, query, null).toASCIIString();
+        String uri = new URI( scheme, hostname, path, query, null ).toASCIIString();
 
-		uri = uri.replace("+", "%2B");
+        uri = uri.replace( "+", "%2B" );
 
-		Assert.assertFalse(uri.toString(), uri.contains("+"));
-		Assert.assertTrue(uri.toString(), uri.contains("%2B"));
+        Assert.assertFalse( uri.toString(), uri.contains( "+" ) );
+        Assert.assertTrue( uri.toString(), uri.contains( "%2B" ) );
 
-		Assert.assertEquals("https://localhost/resources?key=v%C3%A0lue%2B", uri);
-	}
+        Assert.assertEquals( "https://localhost/resources?key=v%C3%A0lue%2B", uri );
+    }
 }

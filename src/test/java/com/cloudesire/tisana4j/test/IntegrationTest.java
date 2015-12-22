@@ -24,22 +24,12 @@ public class IntegrationTest
 {
     private ObjectMapper jsonMapper = new ObjectMapper();
 
-    private static class NetworkAddress {
-        private String origin;
-
-        public String getOrigin() {
-            return origin;
-        }
-    }
-
     @Test
     public void test() throws Exception
     {
         RestClient client = RestClientFactory.getDefaultClient();
 
-        NetworkAddress testClass = client.get(
-                new URL("https://httpbin.org/ip"),
-                NetworkAddress.class);
+        NetworkAddress testClass = client.get( new URL( "https://httpbin.org/ip" ), NetworkAddress.class );
 
         assertNotNull( testClass );
         assertNotNull( testClass.getOrigin() );
@@ -75,31 +65,34 @@ public class IntegrationTest
         assertEquals( "value", jsonNode.findValue( "form" ).findValue( "key" ).asText() );
     }
 
-
-    @Test( expected = ResourceNotFoundException.class )
+    @Test ( expected = ResourceNotFoundException.class )
     public void sniCustomCert() throws IOException, RestException
     {
         RestClient client = RestClientFactory.getNoValidationClient();
-        client.get(
-                new URL("https://ines-gtt-test.liberologico.com/asd")
-        );
+        client.get( new URL( "https://ines-gtt-test.liberologico.com/asd" ) );
     }
 
-    @Test( expected = ResourceNotFoundException.class )
+    @Test ( expected = ResourceNotFoundException.class )
     public void testNoSni() throws IOException, RestException
     {
         RestClient client = RestClientFactory.getNoValidationClient();
-        client.get(
-                    new URL("https://web001.liberologico.com/asd")
-        );
+        client.get( new URL( "https://web001.liberologico.com/asd" ) );
     }
 
     @Test
     public void testCloudFlareSNI() throws IOException, RestException
     {
         RestClient client = RestClientFactory.getDefaultClient();
-        client.get(
-                new URL("https://cloudesire.cloud/")
-        );
+        client.get( new URL( "https://cloudesire.cloud/" ) );
+    }
+
+    private static class NetworkAddress
+    {
+        private String origin;
+
+        public String getOrigin()
+        {
+            return origin;
+        }
     }
 }

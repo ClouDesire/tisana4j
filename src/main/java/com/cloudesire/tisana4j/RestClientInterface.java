@@ -13,89 +13,99 @@ import java.util.Map;
 
 public interface RestClientInterface
 {
-	Map<String, List<String>> getLastResponseHeaders();
+    Map<String, List<String>> getLastResponseHeaders();
 
-	void delete ( URL url ) throws RestException, RuntimeRestException;
+    void delete( URL url ) throws RestException, RuntimeRestException;
 
-	void delete ( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+    void delete( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
 
-	<T> T get ( URL url, Class<T> clazz ) throws RestException, RuntimeRestException;
+    <T> T get( URL url, Class<T> clazz ) throws RestException, RuntimeRestException;
 
-	<T> T get ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+    <T> T get( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
 
-	InputStream getData ( URL url, Map<String, String> newHeaders ) throws RuntimeRestException, RestException;
+    InputStream getData( URL url, Map<String, String> newHeaders ) throws RuntimeRestException, RestException;
 
-	InputStream get ( URL url ) throws RuntimeRestException, RestException, IOException;
+    InputStream get( URL url ) throws RuntimeRestException, RestException, IOException;
 
-	InputStream get ( URL url, Map<String, String> headers ) throws RuntimeRestException, RestException, IOException;
+    InputStream get( URL url, Map<String, String> headers ) throws RuntimeRestException, RestException, IOException;
 
-	<T> List<T> getCollection ( URL url, Class<T> clazz ) throws RestException, RuntimeRestException;
+    <T> List<T> getCollection( URL url, Class<T> clazz ) throws RestException, RuntimeRestException;
 
-	<T> List<T> getCollection ( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+    <T> List<T> getCollection( URL url, Class<T> clazz, Map<String, String> newHeaders )
+            throws RestException, RuntimeRestException;
 
-	Map<String, String> head ( URL url ) throws RestException, RuntimeRestException;
+    Map<String, String> head( URL url ) throws RestException, RuntimeRestException;
 
-	Map<String, String> head ( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+    Map<String, String> head( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
 
-	String[] options ( URL url ) throws RestException, RuntimeRestException;
+    String[] options( URL url ) throws RestException, RuntimeRestException;
 
-	String[] options ( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+    String[] options( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
 
-	void patch ( URL url, Map<String, String> paramMap ) throws RestException, RuntimeRestException;
+    void patch( URL url, Map<String, String> paramMap ) throws RestException, RuntimeRestException;
 
-	void patchO ( URL url, Map<String, Object> paramMap ) throws RestException, RuntimeRestException;
+    void patchO( URL url, Map<String, Object> paramMap ) throws RestException, RuntimeRestException;
 
-	void patch ( URL url, Map<String, String> paramMap, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+    void patch( URL url, Map<String, String> paramMap, Map<String, String> newHeaders )
+            throws RestException, RuntimeRestException;
 
-	void patchO ( URL url, Map<String, Object> paramMap, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+    void patchO( URL url, Map<String, Object> paramMap, Map<String, String> newHeaders )
+            throws RestException, RuntimeRestException;
 
-	<T> T patchEntity ( URL url, Map<String, String> paramMap, Class<T> clazz ) throws RestException, RuntimeRestException;
+    <T> T patchEntity( URL url, Map<String, String> paramMap, Class<T> clazz )
+            throws RestException, RuntimeRestException;
 
-	<T> T patchEntityO ( URL url, Map<String, Object> paramMap, Class<T> clazz ) throws RestException, RuntimeRestException;
+    <T> T patchEntityO( URL url, Map<String, Object> paramMap, Class<T> clazz )
+            throws RestException, RuntimeRestException;
 
-	<T> T patchEntity ( URL url, Map<String, String> paramMap, Class<T> clazz, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+    <T> T patchEntity( URL url, Map<String, String> paramMap, Class<T> clazz, Map<String, String> newHeaders )
+            throws RestException, RuntimeRestException;
 
-	<T> T patchEntityO ( URL url, Map<String, Object> paramMap, Class<T> clazz, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+    <T> T patchEntityO( URL url, Map<String, Object> paramMap, Class<T> clazz, Map<String, String> newHeaders )
+            throws RestException, RuntimeRestException;
 
-	<T> T post ( URL url, T obj ) throws RestException, RuntimeRestException;
+    <T> T post( URL url, T obj ) throws RestException, RuntimeRestException;
 
-	<T> T post ( URL url, T obj, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+    <T> T post( URL url, T obj, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
 
-	<T, R> R post ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass ) throws RestException, RuntimeRestException;
+    <T, R> R post( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass )
+            throws RestException, RuntimeRestException;
 
-	<T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass ) throws RestException, RuntimeRestException;
+    <T> T postData( URL url, String filename, InputStream content, Class<T> responseClass )
+            throws RestException, RuntimeRestException;
 
-	<T> T postData ( URL url, String filename, InputStream content, Class<T> responseClass, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+    <T> T postData( URL url, String filename, InputStream content, Class<T> responseClass,
+            Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
 
-	<T> T postFormData ( URL url, List<BasicNameValuePair> formData, Class<T> responseClass) throws RestException, RuntimeRestException;
+    <T> T postFormData( URL url, List<BasicNameValuePair> formData, Class<T> responseClass )
+            throws RestException, RuntimeRestException;
 
-	<T> T put ( URL url, T obj ) throws RestException, RuntimeRestException;
+    <T> T put( URL url, T obj ) throws RestException, RuntimeRestException;
 
-	<T> T put ( URL url, T obj, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
-		
-	<T, R> R put ( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass ) throws RestException, RuntimeRestException;
-	
-	/**
-	 * Set an exception translator for server errors
-	 *
-	 * @param exceptionTranslator the custom handler for errors
-	 *
-	 */
-	void setExceptionTranslator ( ExceptionTranslator exceptionTranslator );
+    <T> T put( URL url, T obj, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
 
-	void setHeaders ( Map<String, String> headers );
+    <T, R> R put( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass )
+            throws RestException, RuntimeRestException;
 
-	Map<String, String> getHeaders();
+    /**
+     * Set an exception translator for server errors
+     *
+     * @param exceptionTranslator the custom handler for errors
+     */
+    void setExceptionTranslator( ExceptionTranslator exceptionTranslator );
 
-	/**
-	 * @param useXml
-	 *            if true client uses xml instead of json.
-	 */
-	void setUseXml ( boolean useXml );
+    Map<String, String> getHeaders();
 
-	void toggleAuthentication();
+    void setHeaders( Map<String, String> headers );
 
-	String getUsername();
+    /**
+     * @param useXml if true client uses xml instead of json.
+     */
+    void setUseXml( boolean useXml );
 
-	ObjectMapper getObjectMapper();
+    void toggleAuthentication();
+
+    String getUsername();
+
+    ObjectMapper getObjectMapper();
 }

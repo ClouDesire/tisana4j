@@ -9,7 +9,7 @@ public class RestClientFactory
 
     public static RestClient getNoValidationClient()
     {
-        return new RestClient(true);
+        return new RestClient( true );
     }
 
     public static RestClient getNoCompressionClient()
