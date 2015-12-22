@@ -2,8 +2,13 @@ package com.cloudesire.tisana4j.test;
 
 import com.cloudesire.tisana4j.ExceptionTranslator;
 import com.cloudesire.tisana4j.RestClient;
-import com.cloudesire.tisana4j.RestClientBuilder;
-import com.cloudesire.tisana4j.exceptions.*;
+import com.cloudesire.tisana4j.RestClientFactory;
+import com.cloudesire.tisana4j.exceptions.AccessDeniedException;
+import com.cloudesire.tisana4j.exceptions.BadRequestException;
+import com.cloudesire.tisana4j.exceptions.InternalServerErrorException;
+import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
+import com.cloudesire.tisana4j.exceptions.RestException;
+import com.cloudesire.tisana4j.exceptions.UnprocessableEntityException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
@@ -16,15 +21,18 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.SSLContext;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class HTTPTest
 {
@@ -98,7 +106,7 @@ public class HTTPTest
 	private MockWebServer server;
     private final static Logger log = LoggerFactory.getLogger(HTTPTest.class);
 
-	private final RestClient client = new RestClient(true);
+	private final RestClient client = RestClientFactory.getDefaultClient();
 	private String serverUrl = "";
 
 	@Before
@@ -106,22 +114,6 @@ public class HTTPTest
 	{
 		server = new MockWebServer();
 	}
-
-	@Test
-	public void testBuilder() throws Exception
-	{
-		RestClient newClient = new RestClientBuilder()
-				.withUsername("pippo")
-				.withPassword("pasticcio")
-				.withSkipValidation(true)
-				.withHeaders(new HashMap<String, String>())
-				.withCtx(SSLContext.getInstance("SSL"))
-				.withConnectionTimeout(2, TimeUnit.MINUTES)
-				.withSocketTimeout(1, TimeUnit.MINUTES )
-				.build();
-		assertNotNull(newClient);
-	}
-
 
 	@Test
 	public void testGetData() throws Exception
