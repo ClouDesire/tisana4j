@@ -23,7 +23,6 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthenticationException;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -72,6 +71,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class RestClient implements RestClientInterface
 {
@@ -83,7 +83,6 @@ public class RestClient implements RestClientInterface
     private final boolean skipValidation;
     private int CONNECTION_TIMEOUT = 60000 * 2;
     private int SOCKET_TIMEOUT = 60000 * 2;
-    private SSLContext ctx;
     private boolean authenticated;
     private boolean useXml = false;
     private ExceptionTranslator exceptionTranslator = new DefaultExceptionTranslator();
@@ -170,7 +169,6 @@ public class RestClient implements RestClientInterface
         this.skipValidation = skipValidation;
         authenticated = username != null;
         this.headers = headers;
-        this.ctx = ctx;
         if ( connectionTimeOut != null ) this.CONNECTION_TIMEOUT = connectionTimeOut;
         if ( socketTimeOut != null ) this.SOCKET_TIMEOUT = socketTimeOut;
     }
@@ -178,7 +176,7 @@ public class RestClient implements RestClientInterface
     public RestClient( RestClientBuilder builder )
     {
         this( builder.getUsername(), builder.getPassword(), builder.getSkipValidation(), builder.getHeaders(),
-                builder.getCtx(), builder.getConnectionTimeout(), builder.getSocketTimeout() );
+                null, builder.getConnectionTimeout(), builder.getSocketTimeout() );
     }
 
     // wrap newInstance to avoid http://bugs.java.com/bugdatabase/view_bug.do?bug_id=7122142
@@ -280,8 +278,7 @@ public class RestClient implements RestClientInterface
         {
             HttpGet get = new HttpGet( url.toURI() );
             prepareRequest( get, headers );
-            HttpResponse response = execute( get );
-            return response;
+            return execute( get );
         }
         catch ( URISyntaxException e )
         {
@@ -321,9 +318,8 @@ public class RestClient implements RestClientInterface
             parseResponseHeaders( response );
             try ( InputStream stream = response.getEntity().getContent() )
             {
-                List<T> objList = mapper.reader( mapper.getTypeFactory().constructCollectionType( List.class, clazz ) )
+                return mapper.reader( mapper.getTypeFactory().constructCollectionType( List.class, clazz ) )
                         .readValue( stream );
-                return objList;
             }
         }
         catch ( IOException | URISyntaxException e )
@@ -352,8 +348,8 @@ public class RestClient implements RestClientInterface
             Map<String, String> headers = new HashMap<>();
             Header[] allHeaders = response.getAllHeaders();
             if ( allHeaders == null ) return headers;
-            for ( int i = 0; i < allHeaders.length; i++ )
-                headers.put( allHeaders[i].getName(), allHeaders[i].getValue() );
+            for ( Header allHeader : allHeaders )
+                headers.put( allHeader.getName(), allHeader.getValue() );
             return headers;
         }
         catch ( URISyntaxException e )
@@ -385,8 +381,8 @@ public class RestClient implements RestClientInterface
         EntityUtils.consumeQuietly( response.getEntity() );
         String allow = null;
         Header[] allHeaders = response.getAllHeaders();
-        for ( int i = 0; i < allHeaders.length; i++ )
-            if ( allHeaders[i].getName() == "Allow" ) allow = allHeaders[i].getValue();
+        for ( Header allHeader : allHeaders )
+            if ( Objects.equals( allHeader.getName(), "Allow" ) ) allow = allHeader.getValue();
         if ( allow == null ) throw new BadRequestException( 404, "Method options not supported." );
         return allow.split( "," );
     }
@@ -590,7 +586,6 @@ public class RestClient implements RestClientInterface
         return (T) put( url, obj, newHeaders, obj.getClass() );
     }
 
-    @SuppressWarnings ( "unchecked" )
     @Override
     public <T, R> R put( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass )
             throws RestException, RuntimeRestException
@@ -606,7 +601,7 @@ public class RestClient implements RestClientInterface
                 parseResponseHeaders( response );
                 return null;
             }
-            return (R) readObject( responseClass, response );
+            return readObject( responseClass, response );
         }
         catch ( URISyntaxException | ParseException e )
         {
@@ -705,17 +700,12 @@ public class RestClient implements RestClientInterface
     /**
      * Internal execute, log headers, check for errors
      *
-     * @param request
+     * @param request The request object to be executed
      *
-     * @return HttpResponse
+     * @return HttpResponse Response replied by the server
      *
      * @throws RestException
      * @throws RuntimeRestException
-     * @throws IOException
-     * @throws NoSuchAlgorithmException
-     * @throws ClientProtocolException
-     * @throws KeyManagementException
-     * @throws Exception
      */
     private HttpResponse execute( HttpUriRequest request ) throws RestException, RuntimeRestException
     {
@@ -801,7 +791,7 @@ public class RestClient implements RestClientInterface
         return httpClient;
     }
 
-    private <T> T readObject( Class<T> clazz, HttpResponse response ) throws ParseException, RuntimeRestException
+    private <T> T readObject( Class<T> clazz, HttpResponse response ) throws RuntimeRestException
     {
         parseResponseHeaders( response );
         if ( response.getEntity() == null ) return null;
@@ -829,12 +819,11 @@ public class RestClient implements RestClientInterface
                 "Unsupported content type " + ( contentType != null ? contentType.getValue() : "null" ) );
     }
 
-    private <T> T parseJson( Class<T> clazz, HttpResponse response ) throws ParseException, RuntimeRestException
+    private <T> T parseJson( Class<T> clazz, HttpResponse response ) throws RuntimeRestException
     {
         try ( InputStream stream = response.getEntity().getContent() )
         {
-            T obj = mapper.reader( clazz ).readValue( stream );
-            return obj;
+            return mapper.reader( clazz ).readValue( stream );
         }
         catch ( JsonProcessingException e )
         {
@@ -846,8 +835,7 @@ public class RestClient implements RestClientInterface
         }
     }
 
-    @SuppressWarnings ( "unchecked" )
-    private <T> T parseXml( Class<T> clazz, HttpResponse response ) throws ParseException, RuntimeRestException
+    private <T> T parseXml( Class<T> clazz, HttpResponse response ) throws RuntimeRestException
     {
         try ( InputStream stream = response.getEntity().getContent() )
         {
@@ -855,8 +843,7 @@ public class RestClient implements RestClientInterface
             Unmarshaller unmarshallerB = contextB.createUnmarshaller();
             try
             {
-                T obj = (T) unmarshallerB.unmarshal( stream );
-                return obj;
+                return (T) unmarshallerB.unmarshal( stream );
             }
             catch ( JAXBException e )
             {

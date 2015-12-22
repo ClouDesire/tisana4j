@@ -10,7 +10,6 @@ public class RestClientBuilder
     private String password;
     private boolean skipValidation;
     private Map<String, String> headers;
-    private SSLContext ctx;
     private Integer connectionTimeout;
     private Integer socketTimeout;
 
@@ -40,7 +39,6 @@ public class RestClientBuilder
 
     public RestClientBuilder withCtx( SSLContext ctx )
     {
-        this.ctx = ctx;
         return this;
     }
 
@@ -79,11 +77,6 @@ public class RestClientBuilder
     public Map<String, String> getHeaders()
     {
         return headers;
-    }
-
-    public SSLContext getCtx()
-    {
-        return ctx;
     }
 
     public Integer getConnectionTimeout()
