@@ -1,6 +1,7 @@
 package com.cloudesire.tisana4j.test;
 
 import com.cloudesire.tisana4j.RestClient;
+import com.cloudesire.tisana4j.RestClientFactory;
 import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
 import com.cloudesire.tisana4j.exceptions.RestException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -34,7 +35,7 @@ public class IntegrationTest
     @Test
     public void test() throws Exception
     {
-        RestClient client = new RestClient();
+        RestClient client = RestClientFactory.getDefaultClient();
 
         NetworkAddress testClass = client.get(
                 new URL("https://httpbin.org/ip"),
@@ -64,7 +65,7 @@ public class IntegrationTest
     @Test
     public void testPostForm() throws IOException, RestException
     {
-        RestClient client = new RestClient();
+        RestClient client = RestClientFactory.getDefaultClient();
         List<BasicNameValuePair> values = new ArrayList<>();
         values.add( new BasicNameValuePair( "key", "value" ) );
 
@@ -78,7 +79,7 @@ public class IntegrationTest
     @Test( expected = ResourceNotFoundException.class )
     public void sniCustomCert() throws IOException, RestException
     {
-        RestClient client = new RestClient( true );
+        RestClient client = RestClientFactory.getNoValidationClient();
         client.get(
                 new URL("https://ines-gtt-test.liberologico.com/asd")
         );
@@ -87,7 +88,7 @@ public class IntegrationTest
     @Test( expected = ResourceNotFoundException.class )
     public void testNoSni() throws IOException, RestException
     {
-        RestClient client = new RestClient( true );
+        RestClient client = RestClientFactory.getNoValidationClient();
         client.get(
                     new URL("https://web001.liberologico.com/asd")
         );
@@ -96,7 +97,7 @@ public class IntegrationTest
     @Test
     public void testCloudFlareSNI() throws IOException, RestException
     {
-        RestClient client = new RestClient( false );
+        RestClient client = RestClientFactory.getDefaultClient();
         client.get(
                 new URL("https://cloudesire.cloud/")
         );
