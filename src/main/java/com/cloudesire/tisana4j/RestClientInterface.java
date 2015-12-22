@@ -12,6 +12,9 @@ import java.util.Map;
 
 public interface RestClientInterface
 {
+    /**
+     * @return The response headers of the last executed request
+     */
     Map<String, List<String>> getLastResponseHeaders();
 
     void delete( URL url ) throws RestException, RuntimeRestException;
