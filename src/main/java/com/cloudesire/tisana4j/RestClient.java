@@ -817,7 +817,7 @@ public class RestClient implements RestClientInterface
             }
         }
 
-        Header contentType = response.getEntity().getContentType(); // FIXME needs a test for the following
+        Header contentType = response.getEntity().getContentType();
         if ( contentType != null )
         {
             if ( contentType.getValue().contains( ContentType.APPLICATION_JSON.getMimeType() ) )

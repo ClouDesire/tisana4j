@@ -7,6 +7,13 @@ public class RestClientFactory
         return new RestClient();
     }
 
+    public static RestClient getDefaultXmlClient()
+    {
+        final RestClient client = getDefaultClient();
+        client.setUseXml( true );
+        return client;
+    }
+
     public static RestClient getNoValidationClient()
     {
         return new RestClient( true );
