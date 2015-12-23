@@ -42,6 +42,7 @@ import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.entity.mime.MultipartEntityBuilder;
+import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
@@ -530,8 +531,10 @@ public class RestClient implements RestClientInterface
 
             prepareRequest( post, newHeaders );
 
+            InputStreamBody body = new InputStreamBody( content, filename );
+
             HttpEntity entity = MultipartEntityBuilder.create()
-                    .addBinaryBody( "file", content )
+                    .addPart( "file", body )
                     .build();
 
             post.setEntity( entity );
