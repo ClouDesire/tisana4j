@@ -92,6 +92,7 @@ public class RestClient implements RestClientInterface
     private boolean skipContentCompression = false;
     private Map<String, String> headers;
     private Map<String, List<String>> responseHeaders;
+    private SSLContext ctx;
     private HttpClient httpClient;
 
     /**
@@ -172,6 +173,7 @@ public class RestClient implements RestClientInterface
         this.skipValidation = skipValidation;
         authenticated = username != null;
         this.headers = headers;
+        this.ctx = ctx;
         if ( connectionTimeOut != null ) this.CONNECTION_TIMEOUT = connectionTimeOut;
         if ( socketTimeOut != null ) this.SOCKET_TIMEOUT = socketTimeOut;
     }
@@ -773,20 +775,28 @@ public class RestClient implements RestClientInterface
 
             if ( skipContentCompression ) httpClientBuilder.disableContentCompression();
 
-            if ( skipValidation )
+            if ( skipValidation || ctx != null )
             {
                 try
                 {
-                    SSLContext sslContext = SSLContextBuilder.create().loadTrustMaterial( new TrustStrategy()
+                    if ( ctx != null )
                     {
-                        @Override
-                        public boolean isTrusted( X509Certificate[] chain, String authType ) throws CertificateException
+                        httpClientBuilder.setSslcontext( ctx );
+                    }
+                    else
+                    {
+                        SSLContext sslContext = SSLContextBuilder.create().loadTrustMaterial( new TrustStrategy()
                         {
-                            return true;
-                        }
-                    } ).build();
+                            @Override
+                            public boolean isTrusted( X509Certificate[] chain, String authType )
+                                    throws CertificateException
+                            {
+                                return true;
+                            }
+                        } ).build();
 
-                    httpClientBuilder.setSslcontext( sslContext );
+                        httpClientBuilder.setSslcontext( sslContext );
+                    }
 
                     httpClientBuilder.setSSLHostnameVerifier( NoopHostnameVerifier.INSTANCE );
                 }
@@ -794,8 +804,9 @@ public class RestClient implements RestClientInterface
                 {
                     log.warn( "Cannot setup skipValidation", e );
                 }
-
             }
+
+
 
             httpClient = httpClientBuilder.build();
         }
