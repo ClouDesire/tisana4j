@@ -84,4 +84,11 @@ public class IntegrationTest
         assertEquals( "value", jsonNode.findValue( "form" ).findValue( "key" ).asText() );
     }
 
+    @Test
+    public void testRedirect() throws IOException, RestException
+    {
+        RestClient client = RestClientFactory.getDefaultClient();
+        client.get( new URL("https://httpbin.org/redirect/2") );
+    }
+
 }
