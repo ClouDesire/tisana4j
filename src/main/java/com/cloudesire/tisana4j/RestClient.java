@@ -13,6 +13,7 @@ import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
 import com.cloudesire.tisana4j.exceptions.UnauthorizedException;
 import com.cloudesire.tisana4j.exceptions.UnprocessableEntityException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import org.apache.commons.io.IOUtils;
@@ -969,5 +970,14 @@ public class RestClient implements RestClientInterface
     {
         if ( httpClient == null ) this.skipContentCompression = skipContentCompression;
         else throw new IllegalArgumentException( "httpClient already initialized, too late to disable compression" );
+    }
+
+    /**
+     * Change failure behaviour in deserialization if an unknown field is found
+     * @param flag if true fail, if false ignore unkown field
+     */
+    public void setFailOnUknownField(boolean flag)
+    {
+        this.mapper.configure( DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, flag );
     }
 }

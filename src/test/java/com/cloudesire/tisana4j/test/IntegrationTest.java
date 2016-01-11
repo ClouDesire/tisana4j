@@ -4,6 +4,7 @@ import com.cloudesire.tisana4j.Pair;
 import com.cloudesire.tisana4j.RestClient;
 import com.cloudesire.tisana4j.RestClientFactory;
 import com.cloudesire.tisana4j.exceptions.RestException;
+import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
 import com.cloudesire.tisana4j.test.dto.NetworkAddressDTO;
 import com.cloudesire.tisana4j.test.dto.SlideShowDTO;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -89,6 +90,26 @@ public class IntegrationTest
     {
         RestClient client = RestClientFactory.getDefaultClient();
         client.get( new URL("https://httpbin.org/redirect/2") );
+    }
+
+    @Test
+    public void testUnmappedIgnore() throws IOException, RestException
+    {
+        RestClient client = RestClientFactory.getDefaultClient();
+        client.setFailOnUknownField( false );
+        final NetworkAddressDTO dto = client
+                .get( new URL( "https://httpbin.org/get" ), NetworkAddressDTO.class );
+        assertNotNull( dto );
+        assertNotNull( dto.getOrigin() );
+        assertNull( dto.getUnknownField() );
+    }
+
+    @Test( expected = RuntimeRestException.class )
+    public void testUnmappedFail() throws IOException, RestException
+    {
+        RestClient client = RestClientFactory.getDefaultClient();
+        client.setFailOnUknownField( true );
+        client.get( new URL("https://httpbin.org/get"), NetworkAddressDTO.class );
     }
 
 }
