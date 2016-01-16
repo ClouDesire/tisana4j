@@ -15,10 +15,16 @@ public class RestClientBuilderTest
     @Test
     public void testBuilder() throws Exception
     {
-        RestClient newClient = new RestClientBuilder().withUsername( "pippo" ).withPassword( "pasticcio" )
-                .withSkipValidation( true ).withHeaders( new HashMap<String, String>() )
-                .withCtx( SSLContext.getInstance( "SSL" ) ).withConnectionTimeout( 2, TimeUnit.MINUTES )
-                .withSocketTimeout( 1, TimeUnit.MINUTES ).build();
+        RestClient newClient = new RestClientBuilder()
+                .withUsername( "pippo" )
+                .withPassword( "pasticcio" )
+                .withSkipValidation( true )
+                .withHeaders( new HashMap<String, String>() )
+                .withCtx( SSLContext.getInstance( "SSL" ) )
+                .withConnectionTimeout( 2, TimeUnit.MINUTES )
+                .withSocketTimeout( 1, TimeUnit.MINUTES )
+                .build();
+
         assertNotNull( newClient );
     }
 }

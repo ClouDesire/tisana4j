@@ -19,8 +19,8 @@ public class URITest
 
         uri = uri.replace( "+", "%2B" );
 
-        Assert.assertFalse( uri.toString(), uri.contains( "+" ) );
-        Assert.assertTrue( uri.toString(), uri.contains( "%2B" ) );
+        Assert.assertFalse( uri, uri.contains( "+" ) );
+        Assert.assertTrue( uri, uri.contains( "%2B" ) );
 
         Assert.assertEquals( "https://localhost/resources?key=v%C3%A0lue%2B", uri );
     }

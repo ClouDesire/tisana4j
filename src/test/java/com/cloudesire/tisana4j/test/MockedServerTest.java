@@ -34,9 +34,9 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
-public class HTTPTest
+public class MockedServerTest
 {
-    private final static Logger log = LoggerFactory.getLogger( HTTPTest.class );
+    private final static Logger log = LoggerFactory.getLogger( MockedServerTest.class );
     private final RestClient client = RestClientFactory.getDefaultClient();
     private MockWebServer server;
     private String serverUrl = "";
