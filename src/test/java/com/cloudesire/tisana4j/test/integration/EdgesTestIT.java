@@ -22,6 +22,8 @@ public class EdgesTestIT extends BaseTestIT
     public void testRedirect() throws IOException, RestException
     {
         restClient.get( new URL( "https://httpbin.org/redirect/2" ) );
+        restClient.get( new URL( "https://httpbin.org/relative-redirect/2" ) );
+        restClient.get( new URL( "https://httpbin.org/absolute-redirect/2" ) );
     }
 
     @Test
