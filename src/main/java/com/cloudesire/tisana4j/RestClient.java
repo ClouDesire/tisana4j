@@ -6,7 +6,9 @@ import com.cloudesire.tisana4j.exceptions.BadRequestException;
 import com.cloudesire.tisana4j.exceptions.ConflictException;
 import com.cloudesire.tisana4j.exceptions.DefaultExceptionTranslator;
 import com.cloudesire.tisana4j.exceptions.InternalServerErrorException;
+import com.cloudesire.tisana4j.exceptions.MethodNotAllowedException;
 import com.cloudesire.tisana4j.exceptions.ParseException;
+import com.cloudesire.tisana4j.exceptions.PreconditionFailedException;
 import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
 import com.cloudesire.tisana4j.exceptions.RestException;
 import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
@@ -702,11 +704,19 @@ public class RestClient implements RestClientInterface
                 return new AccessDeniedException( responseCode, msgError );
             case 404:
                 return new ResourceNotFoundException( responseCode, msgError );
+            case 405:
+                return new MethodNotAllowedException( responseCode, msgError );
             case 409:
                 return new ConflictException( responseCode, msgError );
+            case 412:
+                return new PreconditionFailedException( responseCode, msgError );
             case 422:
                 return new UnprocessableEntityException( responseCode, msgError );
             case 500:
+            case 501:
+            case 502:
+            case 503:
+            case 504:
                 return new InternalServerErrorException( responseCode, msgError );
         }
         return new RestException( responseCode, msgError );
