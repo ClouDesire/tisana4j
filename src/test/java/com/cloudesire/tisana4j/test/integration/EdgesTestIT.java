@@ -6,6 +6,7 @@ import com.cloudesire.tisana4j.exceptions.RestException;
 import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
 import com.cloudesire.tisana4j.test.dto.NetworkAddressDTO;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.apache.commons.io.IOUtils;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -21,9 +22,9 @@ public class EdgesTestIT extends BaseTestIT
     @Test
     public void testRedirect() throws IOException, RestException
     {
-        restClient.get( new URL( "https://httpbin.org/redirect/2" ) );
-        restClient.get( new URL( "https://httpbin.org/relative-redirect/2" ) );
-        restClient.get( new URL( "https://httpbin.org/absolute-redirect/2" ) );
+        IOUtils.closeQuietly( restClient.get( new URL( "https://httpbin.org/redirect/2" ) ) );
+        IOUtils.closeQuietly( restClient.get( new URL( "https://httpbin.org/relative-redirect/2" ) ) );
+        IOUtils.closeQuietly( restClient.get( new URL( "https://httpbin.org/absolute-redirect/2" ) ) );
     }
 
     @Test
