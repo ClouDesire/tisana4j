@@ -14,6 +14,7 @@ import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
 import com.cloudesire.tisana4j.exceptions.RestException;
 import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
 import com.cloudesire.tisana4j.exceptions.UnauthorizedException;
+import com.cloudesire.tisana4j.exceptions.UnmappedRestException;
 import com.cloudesire.tisana4j.exceptions.UnprocessableEntityException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
@@ -723,7 +724,7 @@ public class RestClient implements RestClientInterface
             case 504:
                 return new InternalServerErrorException( responseCode, msgError );
         }
-        return new RestException( responseCode, msgError );
+        return new UnmappedRestException( responseCode, msgError );
     }
 
     /**
