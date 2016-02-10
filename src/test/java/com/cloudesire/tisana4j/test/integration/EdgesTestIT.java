@@ -2,6 +2,7 @@ package com.cloudesire.tisana4j.test.integration;
 
 import com.cloudesire.tisana4j.RestClient;
 import com.cloudesire.tisana4j.RestClientFactory;
+import com.cloudesire.tisana4j.exceptions.RedirectException;
 import com.cloudesire.tisana4j.exceptions.RestException;
 import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
 import com.cloudesire.tisana4j.test.dto.NetworkAddressDTO;
@@ -12,6 +13,7 @@ import org.junit.Test;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.HashMap;
 
 import static junit.framework.Assert.assertNull;
 import static org.junit.Assert.assertNotNull;
@@ -25,6 +27,12 @@ public class EdgesTestIT extends BaseTestIT
         IOUtils.closeQuietly( restClient.get( new URL( "https://httpbin.org/redirect/2" ) ) );
         IOUtils.closeQuietly( restClient.get( new URL( "https://httpbin.org/relative-redirect/2" ) ) );
         IOUtils.closeQuietly( restClient.get( new URL( "https://httpbin.org/absolute-redirect/2" ) ) );
+    }
+
+    @Test( expected = RedirectException.class )
+    public void testPostRedirect() throws IOException, RestException
+    {
+        restClient.post( new URL( "http://httpbin.org/status/302" ), new HashMap<>() );
     }
 
     @Test

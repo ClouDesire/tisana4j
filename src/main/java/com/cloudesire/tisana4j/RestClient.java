@@ -9,6 +9,7 @@ import com.cloudesire.tisana4j.exceptions.InternalServerErrorException;
 import com.cloudesire.tisana4j.exceptions.MethodNotAllowedException;
 import com.cloudesire.tisana4j.exceptions.ParseException;
 import com.cloudesire.tisana4j.exceptions.PreconditionFailedException;
+import com.cloudesire.tisana4j.exceptions.RedirectException;
 import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
 import com.cloudesire.tisana4j.exceptions.RestException;
 import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
@@ -696,6 +697,9 @@ public class RestClient implements RestClientInterface
 
         switch ( responseCode )
         {
+            case 301:
+            case 302:
+                return new RedirectException( responseCode, msgError );
             case 400:
                 return new BadRequestException( responseCode, msgError );
             case 401:
