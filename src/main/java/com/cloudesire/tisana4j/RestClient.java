@@ -87,7 +87,7 @@ public class RestClient implements RestClientInterface
     private final static Object jaxbGuard = new Object();
     private final String username;
     private final String password;
-    private final ObjectMapper mapper = new ObjectMapper();
+    private ObjectMapper mapper = new ObjectMapper();
     private final boolean skipValidation;
     private int CONNECTION_TIMEOUT = 60000 * 2;
     private int SOCKET_TIMEOUT = 60000 * 2;
@@ -208,12 +208,6 @@ public class RestClient implements RestClientInterface
     public String getUsername()
     {
         return username;
-    }
-
-    @Override
-    public ObjectMapper getObjectMapper()
-    {
-        return mapper;
     }
 
     @Override
@@ -994,5 +988,11 @@ public class RestClient implements RestClientInterface
     public void setFailOnUknownField(boolean flag)
     {
         this.mapper.configure( DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, flag );
+    }
+
+    @Override
+    public void setObjectMapper( ObjectMapper mapper )
+    {
+        this.mapper = mapper;
     }
 }

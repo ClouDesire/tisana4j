@@ -109,5 +109,5 @@ public interface RestClientInterface
 
     String getUsername();
 
-    ObjectMapper getObjectMapper();
+    void setObjectMapper( ObjectMapper mapper );
 }
