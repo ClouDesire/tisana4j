@@ -83,8 +83,8 @@ import java.util.Objects;
 
 public class RestClient implements RestClientInterface
 {
-    private final static Logger log = LoggerFactory.getLogger( RestClient.class );
-    private final static Object jaxbGuard = new Object();
+    private static final Logger log = LoggerFactory.getLogger( RestClient.class );
+    private static final Object jaxbGuard = new Object();
     private final String username;
     private final String password;
     private ObjectMapper mapper = new ObjectMapper();
