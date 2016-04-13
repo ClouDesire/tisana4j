@@ -113,5 +113,7 @@ public interface RestClientInterface
 
     void setObjectMapperFailOnUknownField( boolean flag );
 
+    ObjectMapper getObjectMapper();
+
     void setObjectMapper( ObjectMapper mapper );
 }

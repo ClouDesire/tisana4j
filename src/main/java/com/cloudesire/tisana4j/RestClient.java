@@ -996,6 +996,13 @@ public class RestClient implements RestClientInterface
         this.mapper.configure( DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, flag );
     }
 
+    @Deprecated
+    @Override
+    public ObjectMapper getObjectMapper()
+    {
+        return mapper;
+    }
+
     @Override
     public void setObjectMapper( ObjectMapper mapper )
     {
