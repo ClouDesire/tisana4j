@@ -38,7 +38,7 @@ public class EdgesTestIT extends BaseTestIT
     @Test
     public void testUnmappedIgnore() throws IOException, RestException
     {
-        restClient.setFailOnUknownField( false );
+        restClient.setObjectMapperFailOnUknownField( false );
 
         final NetworkAddressDTO dto = restClient.get( new URL( "https://httpbin.org/get" ), NetworkAddressDTO.class );
 
@@ -50,7 +50,7 @@ public class EdgesTestIT extends BaseTestIT
     @Test ( expected = RuntimeRestException.class )
     public void testUnmappedFail() throws IOException, RestException
     {
-        restClient.setFailOnUknownField( true );
+        restClient.setObjectMapperFailOnUknownField( true );
         restClient.get( new URL( "https://httpbin.org/get" ), NetworkAddressDTO.class );
     }
 

@@ -13,7 +13,7 @@ public abstract class BaseTestIT
     @Before
     public void setUp() throws Exception
     {
-        restClient.setFailOnUknownField( false );
+        restClient.setObjectMapperFailOnUknownField( false );
     }
 
 }

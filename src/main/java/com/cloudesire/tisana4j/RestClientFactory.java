@@ -22,7 +22,7 @@ public class RestClientFactory
     public static RestClient getNoCompressionClient()
     {
         final RestClient client = getDefaultClient();
-        client.setSkipContentCompression( true );
+        client.setHttpContentCompressionOverride( true );
         return client;
     }
 }

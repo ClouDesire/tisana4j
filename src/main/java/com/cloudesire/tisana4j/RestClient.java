@@ -975,17 +975,23 @@ public class RestClient implements RestClientInterface
         return responseHeaders;
     }
 
-    public void setSkipContentCompression( boolean skipContentCompression )
+    /**
+     * Use to disable content compression
+     * @param disableContentCompression true if content compression should be disabled
+     */
+    @Override
+    public void setHttpContentCompressionOverride( boolean disableContentCompression )
     {
-        if ( httpClient == null ) this.skipContentCompression = skipContentCompression;
+        if ( httpClient == null ) this.skipContentCompression = disableContentCompression;
         else throw new IllegalArgumentException( "httpClient already initialized, too late to disable compression" );
     }
 
     /**
      * Change failure behaviour in deserialization if an unknown field is found
-     * @param flag if true fail, if false ignore unkown field
+     * @param flag if true fail, if false ignore unknown field
      */
-    public void setFailOnUknownField(boolean flag)
+    @Override
+    public void setObjectMapperFailOnUknownField( boolean flag )
     {
         this.mapper.configure( DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, flag );
     }

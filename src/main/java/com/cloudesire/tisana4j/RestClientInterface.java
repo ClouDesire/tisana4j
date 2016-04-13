@@ -109,5 +109,9 @@ public interface RestClientInterface
 
     String getUsername();
 
+    void setHttpContentCompressionOverride( boolean disableContentCompression );
+
+    void setObjectMapperFailOnUknownField( boolean flag );
+
     void setObjectMapper( ObjectMapper mapper );
 }
