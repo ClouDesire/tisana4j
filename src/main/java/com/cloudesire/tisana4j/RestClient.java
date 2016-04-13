@@ -1,21 +1,12 @@
 package com.cloudesire.tisana4j;
 
 import com.cloudesire.tisana4j.ExceptionTranslator.ResponseMessage;
-import com.cloudesire.tisana4j.exceptions.AccessDeniedException;
 import com.cloudesire.tisana4j.exceptions.BadRequestException;
-import com.cloudesire.tisana4j.exceptions.ConflictException;
 import com.cloudesire.tisana4j.exceptions.DefaultExceptionTranslator;
-import com.cloudesire.tisana4j.exceptions.InternalServerErrorException;
-import com.cloudesire.tisana4j.exceptions.MethodNotAllowedException;
+import com.cloudesire.tisana4j.exceptions.ExceptionFactory;
 import com.cloudesire.tisana4j.exceptions.ParseException;
-import com.cloudesire.tisana4j.exceptions.PreconditionFailedException;
-import com.cloudesire.tisana4j.exceptions.RedirectException;
-import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
 import com.cloudesire.tisana4j.exceptions.RestException;
 import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
-import com.cloudesire.tisana4j.exceptions.UnauthorizedException;
-import com.cloudesire.tisana4j.exceptions.UnmappedRestException;
-import com.cloudesire.tisana4j.exceptions.UnprocessableEntityException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -688,37 +679,7 @@ public class RestClient implements RestClientInterface
 
     private RestException getDefaultException( int responseCode, String reasonPhrase, String responseMessage )
     {
-        String msgError = responseMessage != null ? responseMessage : reasonPhrase;
-
-        switch ( responseCode )
-        {
-            case 301:
-            case 302:
-                return new RedirectException( responseCode, msgError );
-            case 400:
-                return new BadRequestException( responseCode, msgError );
-            case 401:
-                return new UnauthorizedException( responseCode, msgError );
-            case 403:
-                return new AccessDeniedException( responseCode, msgError );
-            case 404:
-                return new ResourceNotFoundException( responseCode, msgError );
-            case 405:
-                return new MethodNotAllowedException( responseCode, msgError );
-            case 409:
-                return new ConflictException( responseCode, msgError );
-            case 412:
-                return new PreconditionFailedException( responseCode, msgError );
-            case 422:
-                return new UnprocessableEntityException( responseCode, msgError );
-            case 500:
-            case 501:
-            case 502:
-            case 503:
-            case 504:
-                return new InternalServerErrorException( responseCode, msgError );
-        }
-        return new UnmappedRestException( responseCode, msgError );
+        return ExceptionFactory.getException( responseCode, reasonPhrase, responseMessage );
     }
 
     /**
