@@ -808,6 +808,14 @@ public class RestClient implements RestClientInterface
             if ( contentType.getValue().contains( ContentType.APPLICATION_JSON.getMimeType() ) )
                 return parseJson( clazz, response );
             if ( contentType.getValue().toLowerCase().contains( "xml" ) ) return parseXml( clazz, response );
+            if ( contentType.getValue().contains( ContentType.TEXT_PLAIN.getMimeType() ) ) try
+            {
+                return (T) IOUtils.toString( response.getEntity().getContent() );
+            }
+            catch ( IOException e )
+            {
+                throw new RuntimeRestException( e );
+            }
         }
         throw new ParseException(
                 "Unsupported content type " + ( contentType != null ? contentType.getValue() : "null" ) );
