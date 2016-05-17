@@ -2,6 +2,7 @@ package com.cloudesire.tisana4j;
 
 import com.cloudesire.tisana4j.exceptions.RestException;
 import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -23,7 +24,12 @@ public interface RestClientInterface
 
     <T> T get( URL url, Class<T> clazz ) throws RestException, RuntimeRestException;
 
+    <T> T get( URL url, TypeReference<T> typeReference ) throws RestException, RuntimeRestException;
+
     <T> T get( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+
+    <T> T get( URL url, TypeReference<T> typeReference, Map<String, String> newHeaders )
+            throws RestException, RuntimeRestException;
 
     InputStream getData( URL url, Map<String, String> newHeaders ) throws RuntimeRestException, RestException;
 

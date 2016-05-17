@@ -9,6 +9,7 @@ import com.cloudesire.tisana4j.exceptions.InternalServerErrorException;
 import com.cloudesire.tisana4j.exceptions.ResourceNotFoundException;
 import com.cloudesire.tisana4j.exceptions.RestException;
 import com.cloudesire.tisana4j.exceptions.UnprocessableEntityException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.squareup.okhttp.mockwebserver.MockResponse;
 import com.squareup.okhttp.mockwebserver.MockWebServer;
@@ -22,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
@@ -169,6 +171,28 @@ public class MockedServerTest
         assertEquals( 0, request.getBody().size() );
         assertFalse( collection.isEmpty() );
         assertEquals( "15", collection.get( 0 ).id.toString() );
+    }
+
+    @Test
+    public void testGetCollectionWithTypeReference() throws Exception
+    {
+        String json = "[ 1.50 ]";
+
+        MockResponse response = new MockResponse();
+        response.setResponseCode( 200 );
+        response.addHeader( "Content-Type", "application/json" );
+        response.setBody( json );
+        server.enqueue( response );
+        server.start( 9999 );
+
+        List<BigDecimal> collection = client.get( server.getUrl( "/resources" ), new TypeReference<List<BigDecimal>>(){} );
+
+        RecordedRequest request = server.takeRequest();
+        assertEquals( "/resources", request.getPath() );
+        assertEquals( "GET", request.getMethod() );
+        assertEquals( 0, request.getBody().size() );
+        assertFalse( collection.isEmpty() );
+        assertEquals( "1.50", collection.get( 0 ).toString() );
     }
 
     @Test

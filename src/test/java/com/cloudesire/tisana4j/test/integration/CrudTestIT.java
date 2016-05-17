@@ -6,6 +6,7 @@ import com.cloudesire.tisana4j.RestClientFactory;
 import com.cloudesire.tisana4j.exceptions.RestException;
 import com.cloudesire.tisana4j.test.dto.HttpBinRequestDTO;
 import com.cloudesire.tisana4j.test.dto.SlideShowDTO;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Test;
 
@@ -14,6 +15,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -27,6 +29,16 @@ public class CrudTestIT extends BaseTestIT
 
         assertNotNull( response );
         assertNotNull( response.getOrigin() );
+    }
+
+    @Test
+    public void testGetJsonWithTypeReference() throws Exception
+    {
+        Map<String, Object> response = restClient
+                .get( new URL( "https://httpbin.org/get" ), new TypeReference<Map<String, Object>>(){} );
+
+        assertNotNull( response );
+        assertNotNull( response.get( "origin" ) );
     }
 
     @Test
