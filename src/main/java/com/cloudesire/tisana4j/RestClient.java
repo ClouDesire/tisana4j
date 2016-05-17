@@ -8,6 +8,7 @@ import com.cloudesire.tisana4j.exceptions.ParseException;
 import com.cloudesire.tisana4j.exceptions.RestException;
 import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
@@ -253,6 +254,12 @@ public class RestClient implements RestClientInterface
     }
 
     @Override
+    public <T> T get( URL url, TypeReference<T> typeReference ) throws RestException, RuntimeRestException
+    {
+        return get( url, typeReference, null );
+    }
+
+    @Override
     public <T> T get( URL url, Class<T> clazz, Map<String, String> newHeaders )
             throws RuntimeRestException, RestException
     {
@@ -260,6 +267,21 @@ public class RestClient implements RestClientInterface
         {
             HttpResponse response = getInternal( url, newHeaders );
             return readObject( clazz, response );
+        }
+        catch ( ParseException e )
+        {
+            throw new RuntimeRestException( e );
+        }
+    }
+
+    @Override
+    public <T> T get( URL url, TypeReference<T> typeReference, Map<String, String> newHeaders )
+            throws RestException, RuntimeRestException
+    {
+        try
+        {
+            HttpResponse response = getInternal( url, newHeaders );
+            return readJsonObject( typeReference, response );
         }
         catch ( ParseException e )
         {
@@ -821,11 +843,39 @@ public class RestClient implements RestClientInterface
                 "Unsupported content type " + ( contentType != null ? contentType.getValue() : "null" ) );
     }
 
+    private <T> T readJsonObject( TypeReference<T> typeReference, HttpResponse response ) throws RuntimeRestException
+    {
+        Header contentType = response.getEntity().getContentType();
+        if ( contentType != null )
+        {
+            if ( contentType.getValue().contains( ContentType.APPLICATION_JSON.getMimeType() ) )
+                return parseJson( typeReference, response );
+        }
+        throw new ParseException(
+                "Unsupported content type " + ( contentType != null ? contentType.getValue() : "null" ) );
+    }
+
     private <T> T parseJson( Class<T> clazz, HttpResponse response ) throws RuntimeRestException
     {
         try ( InputStream stream = response.getEntity().getContent() )
         {
             return mapper.reader( clazz ).readValue( stream );
+        }
+        catch ( JsonProcessingException e )
+        {
+            throw new ParseException( e );
+        }
+        catch ( IllegalStateException | IOException e1 )
+        {
+            throw new RuntimeRestException( e1 );
+        }
+    }
+
+    private <T> T parseJson( TypeReference<T> typeReference, HttpResponse response ) throws RuntimeRestException
+    {
+        try ( InputStream stream = response.getEntity().getContent() )
+        {
+            return mapper.reader( typeReference ).readValue( stream );
         }
         catch ( JsonProcessingException e )
         {
