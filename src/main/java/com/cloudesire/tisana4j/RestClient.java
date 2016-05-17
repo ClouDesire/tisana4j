@@ -857,25 +857,30 @@ public class RestClient implements RestClientInterface
 
     private <T> T parseJson( Class<T> clazz, HttpResponse response ) throws RuntimeRestException
     {
-        try ( InputStream stream = response.getEntity().getContent() )
-        {
-            return mapper.reader( clazz ).readValue( stream );
-        }
-        catch ( JsonProcessingException e )
-        {
-            throw new ParseException( e );
-        }
-        catch ( IllegalStateException | IOException e1 )
-        {
-            throw new RuntimeRestException( e1 );
-        }
+        return internalParseJson( clazz, response );
     }
 
     private <T> T parseJson( TypeReference<T> typeReference, HttpResponse response ) throws RuntimeRestException
     {
+        return internalParseJson( typeReference, response );
+    }
+
+    @SuppressWarnings("unchecked")
+    private <T> T internalParseJson( Object parameter, HttpResponse response ) throws RuntimeRestException
+    {
         try ( InputStream stream = response.getEntity().getContent() )
         {
-            return mapper.reader( typeReference ).readValue( stream );
+            if ( parameter instanceof Class)
+            {
+                Class<T> clazz = (Class<T>) parameter;
+                return mapper.reader( clazz ).readValue( stream );
+            }
+            if ( parameter instanceof TypeReference)
+            {
+                TypeReference<T> clazz = (TypeReference<T>) parameter;
+                return mapper.reader( clazz ).readValue( stream );
+            }
+            throw new IllegalArgumentException( "First parameter should be a Class or a TypeReference" );
         }
         catch ( JsonProcessingException e )
         {
