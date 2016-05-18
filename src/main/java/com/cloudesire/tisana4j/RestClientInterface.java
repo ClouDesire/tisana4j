@@ -1,11 +1,9 @@
 package com.cloudesire.tisana4j;
 
 import com.cloudesire.tisana4j.exceptions.RestException;
-import com.cloudesire.tisana4j.exceptions.RuntimeRestException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.List;
@@ -18,82 +16,82 @@ public interface RestClientInterface
      */
     Map<String, List<String>> getLastResponseHeaders();
 
-    void delete( URL url ) throws RestException, RuntimeRestException;
+    void delete( URL url ) throws RestException;
 
-    void delete( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+    void delete( URL url, Map<String, String> newHeaders ) throws RestException;
 
-    <T> T get( URL url, Class<T> clazz ) throws RestException, RuntimeRestException;
+    <T> T get( URL url, Class<T> clazz ) throws RestException;
 
-    <T> T get( URL url, TypeReference<T> typeReference ) throws RestException, RuntimeRestException;
+    <T> T get( URL url, TypeReference<T> typeReference ) throws RestException;
 
-    <T> T get( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+    <T> T get( URL url, Class<T> clazz, Map<String, String> newHeaders ) throws RestException;
 
     <T> T get( URL url, TypeReference<T> typeReference, Map<String, String> newHeaders )
-            throws RestException, RuntimeRestException;
+            throws RestException;
 
-    InputStream getData( URL url, Map<String, String> newHeaders ) throws RuntimeRestException, RestException;
+    InputStream getData( URL url, Map<String, String> newHeaders ) throws RestException;
 
-    InputStream get( URL url ) throws RuntimeRestException, RestException, IOException;
+    InputStream get( URL url ) throws RestException;
 
-    InputStream get( URL url, Map<String, String> headers ) throws RuntimeRestException, RestException, IOException;
+    InputStream get( URL url, Map<String, String> headers ) throws RestException;
 
-    <T> List<T> getCollection( URL url, Class<T> clazz ) throws RestException, RuntimeRestException;
+    <T> List<T> getCollection( URL url, Class<T> clazz ) throws RestException;
 
     <T> List<T> getCollection( URL url, Class<T> clazz, Map<String, String> newHeaders )
-            throws RestException, RuntimeRestException;
+            throws RestException;
 
-    Map<String, String> head( URL url ) throws RestException, RuntimeRestException;
+    Map<String, String> head( URL url ) throws RestException;
 
-    Map<String, String> head( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+    Map<String, String> head( URL url, Map<String, String> newHeaders ) throws RestException;
 
-    String[] options( URL url ) throws RestException, RuntimeRestException;
+    String[] options( URL url ) throws RestException;
 
-    String[] options( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+    String[] options( URL url, Map<String, String> newHeaders ) throws RestException;
 
-    void patch( URL url, Map<String, String> paramMap ) throws RestException, RuntimeRestException;
+    void patch( URL url, Map<String, String> paramMap ) throws RestException;
 
-    void patchO( URL url, Map<String, Object> paramMap ) throws RestException, RuntimeRestException;
+    void patchO( URL url, Map<String, Object> paramMap ) throws RestException;
 
     void patch( URL url, Map<String, String> paramMap, Map<String, String> newHeaders )
-            throws RestException, RuntimeRestException;
+            throws RestException;
 
     void patchO( URL url, Map<String, Object> paramMap, Map<String, String> newHeaders )
-            throws RestException, RuntimeRestException;
+            throws RestException;
 
     <T> T patchEntity( URL url, Map<String, String> paramMap, Class<T> clazz )
-            throws RestException, RuntimeRestException;
+            throws RestException;
 
     <T> T patchEntityO( URL url, Map<String, Object> paramMap, Class<T> clazz )
-            throws RestException, RuntimeRestException;
+            throws RestException;
 
     <T> T patchEntity( URL url, Map<String, String> paramMap, Class<T> clazz, Map<String, String> newHeaders )
-            throws RestException, RuntimeRestException;
+            throws RestException;
 
     <T> T patchEntityO( URL url, Map<String, Object> paramMap, Class<T> clazz, Map<String, String> newHeaders )
-            throws RestException, RuntimeRestException;
+            throws RestException;
 
-    <T> T post( URL url, T obj ) throws RestException, RuntimeRestException;
+    <T> T post( URL url, T obj ) throws RestException;
 
-    <T> T post( URL url, T obj, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+    <T> T post( URL url, T obj, Map<String, String> newHeaders ) throws RestException;
 
     <T, R> R post( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass )
-            throws RestException, RuntimeRestException;
+            throws RestException;
 
     <T> T postData( URL url, String filename, InputStream content, Class<T> responseClass )
-            throws RestException, RuntimeRestException;
+            throws RestException;
 
     <T> T postData( URL url, String filename, InputStream content, Class<T> responseClass,
-            Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+            Map<String, String> newHeaders ) throws RestException;
 
     <T> T postFormData( URL url, List<Pair> keyValueList, Class<T> responseClass )
-            throws RestException, RuntimeRestException;
+            throws RestException;
 
-    <T> T put( URL url, T obj ) throws RestException, RuntimeRestException;
+    <T> T put( URL url, T obj ) throws RestException;
 
-    <T> T put( URL url, T obj, Map<String, String> newHeaders ) throws RestException, RuntimeRestException;
+    <T> T put( URL url, T obj, Map<String, String> newHeaders ) throws RestException;
 
     <T, R> R put( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass )
-            throws RestException, RuntimeRestException;
+            throws RestException;
 
     /**
      * Set an exception translator for server errors
