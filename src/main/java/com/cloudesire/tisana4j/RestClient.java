@@ -203,7 +203,7 @@ public class RestClient implements RestClientInterface
     }
 
     @Override
-    public void delete( URL url ) throws RestException, RuntimeRestException
+    public void delete( URL url ) throws RestException
     {
         delete( url, null );
     }
@@ -230,7 +230,7 @@ public class RestClient implements RestClientInterface
     }
 
     @Override
-    public void delete( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
+    public void delete( URL url, Map<String, String> newHeaders ) throws RestException
     {
         HttpDelete delete;
         try
@@ -248,7 +248,7 @@ public class RestClient implements RestClientInterface
     }
 
     @Override
-    public <T> T get( URL url, Class<T> clazz ) throws RestException, RuntimeRestException
+    public <T> T get( URL url, Class<T> clazz ) throws RestException
     {
         return get( url, clazz, null );
     }
@@ -261,7 +261,7 @@ public class RestClient implements RestClientInterface
 
     @Override
     public <T> T get( URL url, Class<T> clazz, Map<String, String> newHeaders )
-            throws RuntimeRestException, RestException
+            throws RestException
     {
         try
         {
@@ -289,7 +289,7 @@ public class RestClient implements RestClientInterface
         }
     }
 
-    private HttpResponse getInternal( URL url, Map<String, String> headers ) throws RuntimeRestException, RestException
+    private HttpResponse getInternal( URL url, Map<String, String> headers ) throws RestException
     {
         try
         {
@@ -304,20 +304,34 @@ public class RestClient implements RestClientInterface
     }
 
     @Override
-    public InputStream get( URL url ) throws RuntimeRestException, RestException, IOException
+    public InputStream get( URL url ) throws RestException
     {
-        return getInternal( url, new HashMap<String, String>() ).getEntity().getContent();
+        try
+        {
+            return getInternal( url, new HashMap<String, String>() ).getEntity().getContent();
+        }
+        catch ( IOException e )
+        {
+            throw new RestException( e );
+        }
     }
 
     @Override
     public InputStream get( URL url, Map<String, String> headers )
-            throws RuntimeRestException, RestException, IOException
+            throws RestException
     {
-        return getInternal( url, headers ).getEntity().getContent();
+        try
+        {
+            return getInternal( url, headers ).getEntity().getContent();
+        }
+        catch ( IOException e )
+        {
+            throw new RestException( e );
+        }
     }
 
     @Override
-    public <T> List<T> getCollection( URL url, Class<T> clazz ) throws RestException, RuntimeRestException
+    public <T> List<T> getCollection( URL url, Class<T> clazz ) throws RestException
     {
         return getCollection( url, clazz, null );
 
@@ -325,7 +339,7 @@ public class RestClient implements RestClientInterface
 
     @Override
     public <T> List<T> getCollection( URL url, Class<T> clazz, Map<String, String> newHeaders )
-            throws RestException, RuntimeRestException
+            throws RestException
     {
         try
         {
@@ -353,7 +367,7 @@ public class RestClient implements RestClientInterface
 
     @Override
     public Map<String, String> head( URL url, Map<String, String> newHeaders )
-            throws RestException, RuntimeRestException
+            throws RestException
     {
         try
         {
@@ -376,13 +390,13 @@ public class RestClient implements RestClientInterface
     }
 
     @Override
-    public String[] options( URL url ) throws RuntimeRestException, RestException
+    public String[] options( URL url ) throws RestException
     {
         return options( url, null );
     }
 
     @Override
-    public String[] options( URL url, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
+    public String[] options( URL url, Map<String, String> newHeaders ) throws RestException
     {
         HttpOptions options;
         try
@@ -405,34 +419,34 @@ public class RestClient implements RestClientInterface
     }
 
     @Override
-    public void patch( URL url, Map<String, String> paramMap ) throws RestException, RuntimeRestException
+    public void patch( URL url, Map<String, String> paramMap ) throws RestException
     {
         patch( url, paramMap, null );
     }
 
     @Override
-    public void patchO( URL url, Map<String, Object> paramMap ) throws RestException, RuntimeRestException
+    public void patchO( URL url, Map<String, Object> paramMap ) throws RestException
     {
         patchO( url, paramMap, null );
     }
 
     @Override
     public <T> T patchEntity( URL url, Map<String, String> paramMap, Class<T> clazz )
-            throws RestException, RuntimeRestException
+            throws RestException
     {
         return patchEntity( url, paramMap, clazz, null );
     }
 
     @Override
     public <T> T patchEntityO( URL url, Map<String, Object> paramMap, Class<T> clazz )
-            throws RestException, RuntimeRestException
+            throws RestException
     {
         return patchEntityO( url, paramMap, clazz, null );
     }
 
     @Override
     public <T> T patchEntity( URL url, Map<String, String> paramMap, Class<T> clazz, Map<String, String> newHeaders )
-            throws RestException, RuntimeRestException
+            throws RestException
     {
         return patchEntityO( url, paramMap != null ? new HashMap<String, Object>( paramMap ) : null, clazz,
                 newHeaders );
@@ -440,7 +454,7 @@ public class RestClient implements RestClientInterface
 
     @Override
     public <T> T patchEntityO( URL url, Map<String, Object> paramMap, Class<T> clazz, Map<String, String> newHeaders )
-            throws RestException, RuntimeRestException
+            throws RestException
     {
         try
         {
@@ -458,14 +472,14 @@ public class RestClient implements RestClientInterface
 
     @Override
     public void patch( URL url, Map<String, String> paramMap, Map<String, String> newHeaders )
-            throws RestException, RuntimeRestException
+            throws RestException
     {
         patchO( url, paramMap != null ? new HashMap<String, Object>( paramMap ) : null, newHeaders );
     }
 
     @Override
     public void patchO( URL url, Map<String, Object> paramMap, Map<String, String> newHeaders )
-            throws RestException, RuntimeRestException
+            throws RestException
     {
         try
         {
@@ -484,21 +498,21 @@ public class RestClient implements RestClientInterface
     }
 
     @Override
-    public <T> T post( URL url, T obj ) throws RestException, RuntimeRestException
+    public <T> T post( URL url, T obj ) throws RestException
     {
         return post( url, obj, null );
     }
 
     @Override
     @SuppressWarnings ( "unchecked" )
-    public <T> T post( URL url, T obj, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
+    public <T> T post( URL url, T obj, Map<String, String> newHeaders ) throws RestException
     {
         return (T) post( url, obj, newHeaders, obj.getClass() );
     }
 
     @Override
     public <T, R> R post( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass )
-            throws RestException, RuntimeRestException
+            throws RestException
     {
         try
         {
@@ -529,14 +543,14 @@ public class RestClient implements RestClientInterface
 
     @Override
     public <T> T postData( URL url, String filename, InputStream content, Class<T> responseClass )
-            throws RestException, RuntimeRestException
+            throws RestException
     {
         return postData( url, filename, content, responseClass, null );
     }
 
     @Override
     public <T> T postData( URL url, String filename, InputStream content, Class<T> responseClass,
-            Map<String, String> newHeaders ) throws RestException, RuntimeRestException
+            Map<String, String> newHeaders ) throws RestException
     {
 
         try
@@ -569,7 +583,7 @@ public class RestClient implements RestClientInterface
 
     @Override
     public <T> T postFormData( URL url, List<Pair> pairs, Class<T> responseClass )
-            throws RestException, RuntimeRestException
+            throws RestException
     {
         try
         {
@@ -600,21 +614,21 @@ public class RestClient implements RestClientInterface
     }
 
     @Override
-    public <T> T put( URL url, T obj ) throws RestException, RuntimeRestException
+    public <T> T put( URL url, T obj ) throws RestException
     {
         return put( url, obj, null );
     }
 
     @SuppressWarnings ( "unchecked" )
     @Override
-    public <T> T put( URL url, T obj, Map<String, String> newHeaders ) throws RestException, RuntimeRestException
+    public <T> T put( URL url, T obj, Map<String, String> newHeaders ) throws RestException
     {
         return (T) put( url, obj, newHeaders, obj.getClass() );
     }
 
     @Override
     public <T, R> R put( URL url, T obj, Map<String, String> newHeaders, Class<R> responseClass )
-            throws RestException, RuntimeRestException
+            throws RestException
     {
         try
         {
@@ -712,9 +726,8 @@ public class RestClient implements RestClientInterface
      * @return HttpResponse Response replied by the server
      *
      * @throws RestException
-     * @throws RuntimeRestException
      */
-    private HttpResponse execute( HttpUriRequest request ) throws RestException, RuntimeRestException
+    private HttpResponse execute( HttpUriRequest request ) throws RestException
     {
         log.debug( ">>>> " + request.getRequestLine() );
         for ( Header header : request.getAllHeaders() )
@@ -807,7 +820,7 @@ public class RestClient implements RestClientInterface
         return httpClient;
     }
 
-    private <T> T readObject( Class<T> clazz, HttpResponse response ) throws RuntimeRestException
+    private <T> T readObject( Class<T> clazz, HttpResponse response )
     {
         parseResponseHeaders( response );
         if ( response.getEntity() == null ) return null;
@@ -855,7 +868,7 @@ public class RestClient implements RestClientInterface
                 "Unsupported content type " + ( contentType != null ? contentType.getValue() : "null" ) );
     }
 
-    private <T> T parseJson( Class<T> clazz, HttpResponse response ) throws RuntimeRestException
+    private <T> T parseJson( Class<T> clazz, HttpResponse response )
     {
         return internalParseJson( clazz, response );
     }
@@ -886,13 +899,13 @@ public class RestClient implements RestClientInterface
         {
             throw new ParseException( e );
         }
-        catch ( IllegalStateException | IOException e1 )
+        catch ( IllegalStateException | IOException e )
         {
-            throw new RuntimeRestException( e1 );
+            throw new RuntimeRestException( e );
         }
     }
 
-    private <T> T parseXml( Class<T> clazz, HttpResponse response ) throws RuntimeRestException
+    private <T> T parseXml( Class<T> clazz, HttpResponse response )
     {
         try ( InputStream stream = response.getEntity().getContent() )
         {
@@ -907,9 +920,9 @@ public class RestClient implements RestClientInterface
                 throw new ParseException( e );
             }
         }
-        catch ( IllegalStateException | IOException | JAXBException e1 )
+        catch ( IllegalStateException | IOException | JAXBException e )
         {
-            throw new RuntimeRestException( e1 );
+            throw new RuntimeRestException( e );
         }
     }
 
@@ -955,7 +968,7 @@ public class RestClient implements RestClientInterface
         }
     }
 
-    private <T> String serializeXMLContent( T obj, HttpEntityEnclosingRequest request ) throws ParseException
+    private <T> String serializeXMLContent( T obj, HttpEntityEnclosingRequest request )
     {
         request.addHeader( "Content-type", "application/xml" );
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -977,7 +990,7 @@ public class RestClient implements RestClientInterface
     }
 
     @Override
-    public InputStream getData( URL url, Map<String, String> newHeaders ) throws RuntimeRestException, RestException
+    public InputStream getData( URL url, Map<String, String> newHeaders ) throws RestException
     {
         try
         {
