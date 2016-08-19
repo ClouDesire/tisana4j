@@ -48,13 +48,14 @@ public interface RestClientInterface
 
     String[] options( URL url, Map<String, String> newHeaders ) throws RestException;
 
-    void patch( URL url, Map<String, String> paramMap ) throws RestException;
+    void patch( URL url, Object object ) throws RestException;
 
+    void patch( URL url, Object object, Map<String, String> newHeaders ) throws RestException;
+
+    @Deprecated
     void patchO( URL url, Map<String, Object> paramMap ) throws RestException;
 
-    void patch( URL url, Map<String, String> paramMap, Map<String, String> newHeaders )
-            throws RestException;
-
+    @Deprecated
     void patchO( URL url, Map<String, Object> paramMap, Map<String, String> newHeaders )
             throws RestException;
 
