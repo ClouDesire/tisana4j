@@ -419,18 +419,6 @@ public class RestClient implements RestClientInterface
     }
 
     @Override
-    public void patch( URL url, Map<String, String> paramMap ) throws RestException
-    {
-        patch( url, paramMap, null );
-    }
-
-    @Override
-    public void patchO( URL url, Map<String, Object> paramMap ) throws RestException
-    {
-        patchO( url, paramMap, null );
-    }
-
-    @Override
     public <T> T patchEntity( URL url, Map<String, String> paramMap, Class<T> clazz )
             throws RestException
     {
@@ -471,22 +459,20 @@ public class RestClient implements RestClientInterface
     }
 
     @Override
-    public void patch( URL url, Map<String, String> paramMap, Map<String, String> newHeaders )
-            throws RestException
+    public void patch( URL url, Object object ) throws RestException
     {
-        patchO( url, paramMap != null ? new HashMap<String, Object>( paramMap ) : null, newHeaders );
+        patch( url, object, null );
     }
 
     @Override
-    public void patchO( URL url, Map<String, Object> paramMap, Map<String, String> newHeaders )
-            throws RestException
+    public void patch( URL url, Object object, Map<String, String> newHeaders ) throws RestException
     {
         try
         {
             HttpPatch patch = new HttpPatch( url.toURI() );
 
             prepareRequest( patch, newHeaders );
-            writeObject( paramMap, patch );
+            writeObject( object, patch );
             HttpResponse response = execute( patch );
             parseResponseHeaders( response );
             EntityUtils.consumeQuietly( response.getEntity() );
@@ -495,6 +481,18 @@ public class RestClient implements RestClientInterface
         {
             throw new RuntimeRestException( e );
         }
+    }
+
+    @Override
+    public void patchO( URL url, Map<String, Object> paramMap ) throws RestException
+    {
+        patch( url, paramMap, null );
+    }
+
+    @Override
+    public void patchO( URL url, Map<String, Object> paramMap, Map<String, String> newHeaders ) throws RestException
+    {
+        patch( url, paramMap, newHeaders );
     }
 
     @Override

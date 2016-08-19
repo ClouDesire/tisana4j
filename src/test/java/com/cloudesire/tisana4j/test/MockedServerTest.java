@@ -101,6 +101,7 @@ public class MockedServerTest
         assertEquals( "/patch/15", request.getPath() );
         assertEquals( "PATCH", request.getMethod() );
         assertTrue( request.getBody().size() > 0 );
+        assertTrue( request.getBody().readUtf8().contains( "{\"action\":\"doThings\"}" ) );
     }
 
     @Test
