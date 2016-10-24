@@ -19,6 +19,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.fail;
 
 public class CrudTestIT extends BaseTestIT
 {
@@ -100,5 +101,20 @@ public class CrudTestIT extends BaseTestIT
             assertNotNull( slide.getType() );
             assertNotNull( slide.getTitle() );
         }
+    }
+
+    @Test
+    public void errorHttpAlreadyBuilt() throws Exception
+    {
+        testDeleteJson();
+        try
+        {
+            restClient.setProxyHostname( "whatever" );
+        }
+        catch ( IllegalArgumentException ex )
+        {
+            return;
+        }
+        fail();
     }
 }

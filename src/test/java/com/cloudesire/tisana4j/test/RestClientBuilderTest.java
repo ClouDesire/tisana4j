@@ -23,6 +23,7 @@ public class RestClientBuilderTest
                 .withCtx( SSLContext.getInstance( "SSL" ) )
                 .withConnectionTimeout( 2, TimeUnit.MINUTES )
                 .withSocketTimeout( 1, TimeUnit.MINUTES )
+                .withProxyHostname( "proxy.upstream" )
                 .build();
 
         assertNotNull( newClient );
