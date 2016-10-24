@@ -118,6 +118,12 @@ public interface RestClientInterface
 
     void setObjectMapperFailOnUknownField( boolean flag );
 
+    void setProxyHostname( String proxyHostname );
+
+    void setProxyPort( int proxyPort );
+
+    void setProxyScheme( String proxyScheme );
+
     ObjectMapper getObjectMapper();
 
     void setObjectMapper( ObjectMapper mapper );

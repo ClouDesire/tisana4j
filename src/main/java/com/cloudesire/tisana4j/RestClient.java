@@ -1050,6 +1050,7 @@ public class RestClient implements RestClientInterface
      * Enable proxy support
      * @param proxyHostname proxy hostname
      */
+    @Override
     public void setProxyHostname( String proxyHostname )
     {
         settingsAlreadyInitializedCheck();
@@ -1060,6 +1061,7 @@ public class RestClient implements RestClientInterface
      * Change port of proxy
      * @param proxyPort the port number of the proxy server
      */
+    @Override
     public void setProxyPort( int proxyPort )
     {
         settingsAlreadyInitializedCheck();
@@ -1070,6 +1072,7 @@ public class RestClient implements RestClientInterface
      * Proxy protocol (default "http")
      * @param proxyScheme http or https
      */
+    @Override
     public void setProxyScheme( String proxyScheme )
     {
         settingsAlreadyInitializedCheck();
