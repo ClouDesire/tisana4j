@@ -16,6 +16,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpEntityEnclosingRequest;
+import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -91,6 +92,9 @@ public class RestClient implements RestClientInterface
     private Map<String, List<String>> responseHeaders;
     private SSLContext ctx;
     private HttpClient httpClient;
+    private String proxyHostname;
+    private int proxyPort = 8080;
+    private String proxyScheme = "http";
 
     /**
      * Default settings: no authentication and verify if server certificate is
@@ -179,6 +183,9 @@ public class RestClient implements RestClientInterface
     {
         this( builder.getUsername(), builder.getPassword(), builder.getSkipValidation(), builder.getHeaders(),
                 null, builder.getConnectionTimeout(), builder.getSocketTimeout() );
+        this.proxyHostname = builder.getProxyHostname();
+        this.proxyPort = builder.getProxyPort();
+        this.proxyScheme = builder.getProxyScheme();
     }
 
     // wrap newInstance to avoid http://bugs.java.com/bugdatabase/view_bug.do?bug_id=7122142
@@ -769,8 +776,16 @@ public class RestClient implements RestClientInterface
         {
             HttpClientBuilder httpClientBuilder = HttpClients.custom();
 
-            RequestConfig requestConfig = RequestConfig.custom().setConnectionRequestTimeout( CONNECTION_TIMEOUT )
-                    .setSocketTimeout( SOCKET_TIMEOUT ).build();
+            final RequestConfig.Builder requestConfigBuilder = RequestConfig.custom()
+                    .setConnectionRequestTimeout( CONNECTION_TIMEOUT )
+                    .setSocketTimeout( SOCKET_TIMEOUT );
+
+            if ( proxyHostname != null )
+            {
+                HttpHost proxy = new HttpHost( proxyHostname, proxyPort, proxyScheme );
+                requestConfigBuilder.setProxy( proxy );
+            }
+            RequestConfig requestConfig = requestConfigBuilder.build();
 
             SocketConfig socketConfig = SocketConfig.custom().setSoKeepAlive( true ).setSoTimeout( SOCKET_TIMEOUT )
                     .build();
@@ -1017,8 +1032,8 @@ public class RestClient implements RestClientInterface
     @Override
     public void setHttpContentCompressionOverride( boolean disableContentCompression )
     {
-        if ( httpClient == null ) this.skipContentCompression = disableContentCompression;
-        else throw new IllegalArgumentException( "httpClient already initialized, too late to disable compression" );
+        settingsAlreadyInitializedCheck();
+        this.skipContentCompression = disableContentCompression;
     }
 
     /**
@@ -1029,6 +1044,36 @@ public class RestClient implements RestClientInterface
     public void setObjectMapperFailOnUknownField( boolean flag )
     {
         this.mapper.configure( DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, flag );
+    }
+
+    /**
+     * Enable proxy support
+     * @param proxyHostname proxy hostname
+     */
+    public void setProxyHostname( String proxyHostname )
+    {
+        settingsAlreadyInitializedCheck();
+        this.proxyHostname = proxyHostname;
+    }
+
+    /**
+     * Change port of proxy
+     * @param proxyPort the port number of the proxy server
+     */
+    public void setProxyPort( int proxyPort )
+    {
+        settingsAlreadyInitializedCheck();
+        this.proxyPort = proxyPort;
+    }
+
+    /**
+     * Proxy protocol (default "http")
+     * @param proxyScheme http or https
+     */
+    public void setProxyScheme( String proxyScheme )
+    {
+        settingsAlreadyInitializedCheck();
+        this.proxyScheme = proxyScheme;
     }
 
     @Deprecated
@@ -1042,5 +1087,11 @@ public class RestClient implements RestClientInterface
     public void setObjectMapper( ObjectMapper mapper )
     {
         this.mapper = mapper;
+    }
+
+    private void settingsAlreadyInitializedCheck()
+    {
+        if ( httpClient != null )
+            throw new IllegalArgumentException( "httpClient already initialized, too late to change behaviour" );
     }
 }

@@ -12,6 +12,9 @@ public class RestClientBuilder
     private Map<String, String> headers;
     private Integer connectionTimeout;
     private Integer socketTimeout;
+    private String proxyHostname;
+    private int proxyPort = 8080;
+    private String proxyScheme = "http";
 
     public RestClientBuilder withUsername( String username )
     {
@@ -54,38 +57,71 @@ public class RestClientBuilder
         return this;
     }
 
+    public RestClientBuilder withProxyHostname( String proxyHostname )
+    {
+        this.proxyHostname = proxyHostname;
+        return this;
+    }
+
+    public RestClientBuilder withProxyPort( int proxyPort )
+    {
+        this.proxyPort = proxyPort;
+        return this;
+    }
+
+    public RestClientBuilder withProxyScheme( String proxyScheme )
+    {
+        this.proxyScheme = proxyScheme;
+        return this;
+    }
+
     public RestClient build()
     {
         return new RestClient( this );
     }
 
-    public String getUsername()
+    String getUsername()
     {
         return username;
     }
 
-    public String getPassword()
+    String getPassword()
     {
         return password;
     }
 
-    public boolean getSkipValidation()
+    boolean getSkipValidation()
     {
         return skipValidation;
     }
 
-    public Map<String, String> getHeaders()
+    Map<String, String> getHeaders()
     {
         return headers;
     }
 
-    public Integer getConnectionTimeout()
+    Integer getConnectionTimeout()
     {
         return connectionTimeout;
     }
 
-    public Integer getSocketTimeout()
+    Integer getSocketTimeout()
     {
         return socketTimeout;
+    }
+
+    String getProxyHostname()
+    {
+        return proxyHostname;
+    }
+
+    int getProxyPort()
+    {
+        return proxyPort;
+    }
+
+    String getProxyScheme()
+    {
+        return proxyScheme;
     }
 }
