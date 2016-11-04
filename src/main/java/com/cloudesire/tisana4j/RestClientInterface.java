@@ -124,6 +124,10 @@ public interface RestClientInterface
 
     void setProxyScheme( String proxyScheme );
 
+    void setHttpClientMaxConnectionsPerRoute( int httpClientMaxConnPerRoute );
+
+    void setHttpClientMaxConnTotal( int httpClientMaxConnTotal );
+
     ObjectMapper getObjectMapper();
 
     void setObjectMapper( ObjectMapper mapper );

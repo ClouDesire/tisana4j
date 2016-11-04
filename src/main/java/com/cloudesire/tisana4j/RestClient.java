@@ -95,6 +95,8 @@ public class RestClient implements RestClientInterface
     private String proxyHostname;
     private int proxyPort = 8080;
     private String proxyScheme = "http";
+    private int httpClientMaxConnPerRoute = 2;
+    private int httpClientMaxConnTotal = 20;
 
     /**
      * Default settings: no authentication and verify if server certificate is
@@ -774,7 +776,9 @@ public class RestClient implements RestClientInterface
     {
         if ( httpClient == null )
         {
-            HttpClientBuilder httpClientBuilder = HttpClients.custom();
+            HttpClientBuilder httpClientBuilder = HttpClients.custom()
+                    .setMaxConnPerRoute( httpClientMaxConnPerRoute )
+                    .setMaxConnTotal( httpClientMaxConnTotal );
 
             final RequestConfig.Builder requestConfigBuilder = RequestConfig.custom()
                     .setConnectionRequestTimeout( CONNECTION_TIMEOUT )
@@ -1077,6 +1081,20 @@ public class RestClient implements RestClientInterface
     {
         settingsAlreadyInitializedCheck();
         this.proxyScheme = proxyScheme;
+    }
+
+    @Override
+    public void setHttpClientMaxConnectionsPerRoute( int httpClientMaxConnPerRoute )
+    {
+        settingsAlreadyInitializedCheck();
+        this.httpClientMaxConnPerRoute = httpClientMaxConnPerRoute;
+    }
+
+    @Override
+    public void setHttpClientMaxConnTotal( int httpClientMaxConnTotal )
+    {
+        settingsAlreadyInitializedCheck();
+        this.httpClientMaxConnTotal = httpClientMaxConnTotal;
     }
 
     @Deprecated
