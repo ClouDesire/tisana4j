@@ -789,6 +789,17 @@ public class RestClient implements RestClientInterface
                 HttpHost proxy = new HttpHost( proxyHostname, proxyPort, proxyScheme );
                 requestConfigBuilder.setProxy( proxy );
             }
+            else if ( System.getProperty( "http.proxyHost" ) != null )
+            {
+                if ( System.getProperty( "http.proxyPort" ) != null )
+                {
+                    proxyPort = Integer.valueOf( System.getProperty( "http.proxyPort" ) );
+                }
+
+                HttpHost proxy = new HttpHost( System.getProperty( "http.proxyHost" ), proxyPort, proxyScheme );
+                requestConfigBuilder.setProxy( proxy );
+            }
+
             RequestConfig requestConfig = requestConfigBuilder.build();
 
             SocketConfig socketConfig = SocketConfig.custom().setSoKeepAlive( true ).setSoTimeout( SOCKET_TIMEOUT )
