@@ -3,7 +3,6 @@ jobs:
   build:
     docker:
       - image: openjdk:8-jdk
-      - image: redis
     working_directory: ~/tisana4j
     steps:
       - checkout
