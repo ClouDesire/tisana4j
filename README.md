@@ -1,8 +1,7 @@
 tisana4j
 ========
 
-[![Join the chat at https://gitter.im/ClouDesire/tisana4j](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ClouDesire/tisana4j?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Build Status](https://travis-ci.org/ClouDesire/tisana4j.svg?branch=master)](https://travis-ci.org/ClouDesire/tisana4j)
+[![CircleCI](https://circleci.com/gh/ClouDesire/tisana4j.svg?style=svg)](https://circleci.com/gh/ClouDesire/tisana4j)
 [![Requirements Status](https://requires.io/github/ClouDesire/tisana4j/requirements.svg?branch=master)](https://requires.io/github/ClouDesire/tisana4j/requirements/?branch=master)
 [![maven latest release](https://img.shields.io/maven-central/v/com.cloudesire/tisana4j.svg)](http://mvnrepository.com/artifact/com.cloudesire/tisana4j)
 
@@ -61,15 +60,4 @@ public class Test {
 		System.out.println("YOUR IP:" + testClass.getIp());
 	}
 }
-```
-
-#### Refresh gpg key
-
-```
-gpg --gen-key
-gpg --list-keys
-gpg --output public.gpg --export <key-id>
-gpg --output private.gpg --export-secret-key <key-id>
-travis encrypt-file private.gpg
-gpg --keyserver keyserver.ubuntu.com --send-keys <key-id>
 ```
