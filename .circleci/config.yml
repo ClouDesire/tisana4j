@@ -1,0 +1,26 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: openjdk:8-jdk
+    working_directory: ~/tisana4j
+    steps:
+      - checkout
+      - restore_cache:
+          key: tisana4j-root
+      - run:
+          name: Configure Maven repository
+          command: mkdir -p ~/.m2 && cp ~/tisana4j/.circleci/settings.xml ~/.m2
+      - run:
+          name: Build
+          command: ./mvnw -B install -Dmaven.test.skip=true
+      - save_cache:
+          key: tisana4j-root
+          paths:
+            - "~/.m2"
+      - run:
+          name: Run Tests
+          command: ./mvnw -B verify
+      - run:
+          name: Deploy client artifact and build docker server image
+          command: if [ "$CIRCLE_BRANCH" == "master" ]; then ./deploy.sh; fi
