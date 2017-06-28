@@ -199,8 +199,8 @@
 			<url>https://artifactory.cloudesire.com/artifactory/libs-snapshot-local</url>
 		</snapshotRepository>
 		<repository>
-			<id>bintray-tisana4j</id>
-			<url>https://api.bintray.com/maven/cloudesire/maven-releases/tisana4j/</url>
+			<id>bintray</id>
+			<url>https://api.bintray.com/maven/cloudesire/maven-releases/tisana4j/;publish=1</url>
 		</repository>
 	</distributionManagement>
 </project>
